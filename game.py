@@ -19,7 +19,7 @@ class Game(object):
 
     def start(self):
         # Play until the juding stops the game or until the game time is over
-        while self.j.play_round() and not self.clock.is_over():
+        while self.j.play_round():
             pass
 
 if __name__ == '__main__':
@@ -36,4 +36,3 @@ if __name__ == '__main__':
     )
     print "Starting game..."
     g.start()
-    print "Game Over"
