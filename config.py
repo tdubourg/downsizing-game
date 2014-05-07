@@ -1,0 +1,1 @@
+ALLOWED_TRANSACTIONS_PER_ROUND = 2 # In order to allow two-direction transactions. As transactions are one-way
