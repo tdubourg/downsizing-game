@@ -14,7 +14,7 @@ class Game(object):
         self.number_of_players = number_of_players
         self.clock = Clock(maximum_number_of_turns, turns_between_voting_rounds)
         self.j = Judge(self, self.clock)
-        self.players = [Player(i, self.j) for i in range(number_of_players)]
+        self.players = [Player(i, dict(self.j.interface)) for i in range(number_of_players)]
         self.j.players = self.players
 
     def start(self):

@@ -1,4 +1,5 @@
 from config import ALLOWED_TRANSACTIONS_PER_ROUND
+from transactions import BaseTransaction
 
 class PlayerKilledException(Exception):
     """
@@ -20,6 +21,7 @@ class Judge(object):
         self.players = []
         self.game = game
         self.current_player = None
+        self.interface = {"make_transaction": self.make_transaction}
 
     def play_round(self):
         for p in self.players:
@@ -36,6 +38,8 @@ class Judge(object):
             return True
 
     def make_transaction(self, transaction):
+        if not isinstance(transaction, BaseTransaction):
+            return False
         if transaction.player_from is not self.current_player:
             return False
         elif transaction.is_valid() is True:
