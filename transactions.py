@@ -2,7 +2,54 @@ from enum import Enum
 
 Resources = Enum("CASH", "VOTE", "TRUST")
 
-class BaseTransaction(object):
+class AbstractTransaction(object):
+    """Transaction interface"""
+    def __init__(self):
+        super(AbstractTransaction, self).__init__()
+    
+    def is_valid(self, judge):
+        """
+        Is the transaction valid?
+        :return (bool, AbstractTransaction)
+            (True, CopyOfTheTransaction)    if the transaction is valid
+            (False, None)                   if the transaction is invalid
+
+            The copy of the transaction is to be used to avoid the transaction being modified between validation 
+            and application
+        This is a non-abstract method
+        """
+        cl = self.clone()
+        valid = cl._is_valid(judge)
+        if valid:
+            return (True, cl)
+        else:
+            return (False, None)
+
+    def apply(self, players_resources):
+        """
+        Apply the transaction to the players' resources
+        Abstract method. Has to be overriden by children
+        """
+        raise NotImplementedError()
+
+    def clone(self):
+        """
+        Returns a clone of current object. A clone is a 1-to-1 copy
+        of the current object.
+        Abstract method
+        """
+        raise NotImplementedError()
+
+    def _is_valid(self, judge):
+        """
+        Internal use only. Validates in-place the current transaction
+        This is not a private method, but a protected abstract one.
+        It has to be implemented by children, but will be called
+        by parent's is_valid() method unless is_valid() is overriden
+        """
+        raise NotImplementedError()
+
+class UnidirectionalTransaction(AbstractTransaction):
     """Base class for a transaction"""
     def __init__(self, player_from, player_to, resource_type, amount):
         """
@@ -11,7 +58,7 @@ class BaseTransaction(object):
         :param resource_type: Resource
         :param amount: int
         """
-        super(BaseTransaction, self).__init__()
+        super(UnidirectionalTransaction, self).__init__()
         self.player_from = player_from
         self.player_to = player_to
         self.resource_type = resource_type
@@ -20,8 +67,7 @@ class BaseTransaction(object):
         except ValueError:
             self.amount = -1  # So that the transaction is invalid
     
-    def is_valid(self, judge):
-        """ Returns True if the transaction is valid, false else"""
+    def _is_valid(self, judge):
         if self.resource_type not in Resources:
             return False
         if self.amount < 0:
@@ -36,7 +82,38 @@ class BaseTransaction(object):
         players_resources[self.player_from][self.resource_type] -= self.amount
         players_resources[self.player_to][self.resource_type] += self.amount
 
-class ScheduledTransaction(BaseTransaction):
+    def clone(self):
+        return UnidirectionalTransaction(self.player_from, self.player_to, self.resource_type, self.amount)
+
+class BidirectionalTransaction(AbstractTransaction):
+    """Bidirectional transaction"""
+    def __init__(self, player_1, player_2, rtype_1to2, amount_1to2, rtype_2to1, amount_2to1):
+        super(BidirectionalTransaction, self).__init__()
+        self.transaction_1to2 = UnidirectionalTransaction(player_1, player_2, rtype_1to2, amount_1to2)
+        self.transaction_2to1 = UnidirectionalTransaction(player_2, player_1, rtype_2to1, amount_2to1)
+
+    def _is_valid(self, judge):
+        # Note: We already recreated the unidirectional internal transactions so we use the no-copy/in-place
+        # validation method
+        return self.transaction_1to2._is_valid(judge) and self.transaction_2to1._is_valid(judge)
+
+    def apply(self, players_resources):
+        self.transaction_1to2.apply(players_resources)
+        self.transaction_2to1.apply(players_resources)
+
+    def clone(self):
+        return BidirectionalTransaction(
+            self.transaction_1to2.player_from,
+            self.transaction_1to2.player_to,
+            self.transaction_1to2.resource_type,
+            self.transaction_1to2.amount,
+            self.transaction_2to1.resource_type,
+            self.transaction_2to1.resource_type
+        )
+
+
+        
+class ScheduledTransaction(UnidirectionalTransaction):
     def __init__(self, player_from, player_to, resource_type, amount, ):
         super(ScheduledTransaction, self).__init__(player_from, player_to, resource_type, amount)
 

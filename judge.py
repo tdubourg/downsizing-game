@@ -40,18 +40,25 @@ class Judge(object):
             return True
 
     def make_transaction(self, transaction):
-        if not isinstance(transaction, BaseTransaction):
+        try:
+            if not isinstance(transaction, BaseTransaction):
+                return False
+            if transaction.player_from is not self.current_pid:
+                return False
+            else:
+                valid_transaction = transaction.is_valid(self)
+                if valid_transaction[0] is True:
+                    # Note that there will not be any concurrent modification between the check of the transaction and 
+                    print "Transaction is valid, applying it"
+                    valid_transaction[1].apply(self.game.players_resources)
+                    # Transaction is applied, tick the clock
+                    self.clock.tick()
+                    return True
+                # The transaction was not valid
+                return False
+        except:
+            # If anything failed, the transaction should not be accepted
             return False
-        if transaction.player_from is not self.current_pid:
-            return False
-        elif transaction.is_valid(self) is True:
-            # Transaction is valid, tick the clock
-            print "Transaction is valid, applying it"
-            transaction.apply(self.game.players_resources)
-            self.clock.tick()
-            return True
-        # The transaction was not valid
-        return False
     def is_valid_player(self, pid):
         return pid in self.game.players_ids
 
