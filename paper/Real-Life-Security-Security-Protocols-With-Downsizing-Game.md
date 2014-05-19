@@ -27,10 +27,14 @@ The Downsizing Game puts in place multiple players that are all pursuing the sam
 Players can make transactions between each other in order to trade every sort of resources that is available in the game: Money, trust, loyalty, and votes.
 Every given amount of time, a _voting round_ takes places. On voting rounds, _all_ players should vote for _another_ player.
 
+<!-- 
+\vspace{1\baselineskip}
+ -->
+
 The Downsizing Game rules are stated as follows:
 
 - The game has a fixed length, defined in number of rounds.
-- A fixed number of players are in the game.
+- A fixed number of players participate in the game.
 - Every player is given a million units of the game currency (let us call it dollars) at the beginning of the game.
 - At the end of the game, every player must return the original one million dollars that she was given in the beginning,  she can keep the remainder of the money for her.
 - If players cannot give back the entire amount of money that they were given in the beginning, they have contracted a debt that they will have to reimburse.
@@ -41,25 +45,26 @@ The Downsizing Game rules are stated as follows:
 - Players can not vote for themselves.
 - At the end of the game, the player with the most votes wins. The one with the least votes loses.
 
-As a consequence of these rules, here are some example of possible basic strategies:
+As a consequence of these rules, here are some examples of possible basic strategies:
 
 - A player can try to get the maximum amount of votes, in order to be the winner.
-- A player can try to maximize its profit, without caring about votes. He will not win but will still make profit out of the game, as he will keep the remainder of the money after giving back the one million dollars.
+- A player can try to maximize its profit, without caring about votes. She will not win but will still make profit out of the game, as she will keep the remainder of the money after giving back the original one million dollars.
 
-- ### Definitions
+
+### Definitions
 
 #### Current player
 Players play on a turn-by-turn basis. We will call _current player_ the player of which it is currently the turn. The current player is the only one that can make calls to the judging party's interface.
 
 #### Rounds
-A _round_ is an atomic unit of time in the game. A round can thus not be divided into subrounds. A round passes everytime the following actions are executed:
+A _round_ is an atomic unit of time in the game. A round can thus not be divided into subrounds. A round passes every time the following actions are executed:
 
 - A transaction is applied
 - Changing the current player
 - Applying the result of a voting round (see after)
 
 #### Voting rounds
-A voting round is a round where, __before__ any is taken (before even the current player plays), all players will be asked to vote according with the game's rules.
+A voting round is a round where, __before__ any action is taken (before even the current player plays), all players will be asked to vote according with the game's rules.
 
 #### Cheater
 A cheater is a player that breaks a game's rule. Cheaters are immediately killed and thus removed from the game. If,  at the moment they are killed they owe some resources to another player,  the remaining resources of the killed player will be transferred to the one they were owed to,  up the owed amount,  and up to the remaining balance of this resource on this killed player account.
@@ -76,7 +81,7 @@ In our case study, the set of resources will be fixed at the beginning of the ga
 - Cash / money / currency
 - Voting promises
 
-However, a more complex scenario is to give players an interface to declare the tradable resources they have at the judging party. Such an interface would basically take as argument the name of the resource and the original balance / initial quantity of this resource that the player possesses, so that the judging party can check, when validating transactions, that the player is not making up new amounts of its self-made resource between every round.
+However, a more complex scenario would be to give players an interface to declare the tradable resources they have to the judging party. Such an interface would basically take as argument the name of the resource and the original balance / initial quantity of this resource that the player possesses, so that the judging party can check, when validating transactions, that the player is not making up new amounts of its self-made resource between every round.
 
 Such study is left for future work but would allow to model real life trade where businesses might have exclusive resources that they are alone to possess, compared to everyone trading the same resources.
 
@@ -84,30 +89,30 @@ Such study is left for future work but would allow to model real life trade wher
 An _amount_ is a defined, positive integer, quantity of a resource.
 
 #### Transactions
-A _transaction_ is one or multiple transfer(s) _fixed amounts_ of resources between two _identified / authenticated_ players.
+A _transaction_ is one or multiple transfer(s) of _fixed amounts_ of resources between two _identified / authenticated_ players. The player _sending_ the resource will later be referred either as the _sending player_ or _paying player_ or _payer_ or _sender_. The player _receiving_ the resource will later be referred either as the _receiving player_ or _paid player_ or _payee_ or _recipient_.
 
 A transaction can either be unidirectional, that is to say, a player transfers resource to another player and that is all,  or bidirectional. In the latter case, two players transfer resources to each other.  
 
 A bidirectional transaction is _composed_ of two unidirectional transactions.
 
 #### Immediate transactions
-_Immediate_ transaction are the basic transactions: As soon as the transaction is validated, the transfer(s) of resources is/are applied. There can be no other interaction, nothing else can happen in the game between validation and application of the transaction.
+_Immediate_ transactions are the basic transactions: As soon as the transaction is validated, the transfer(s) of resources is/are applied. There can be no other interaction, nothing else can happen in the game between validation and application of the transaction.
 
-A a consequence, when a player agrees on an _immediate_ transaction, she is assured that the transaction will be fulfilled if it's validated by the judging party.
+As a consequence, when a player agrees on an _immediate_ transaction, she is assured that the transaction will be fulfilled if it's validated by the judging party.
 
 #### Delayed / scheduled transactions
-_Scheduled_ or _delayed_ transactions are transaction where some transfer(s) of resources is/are not immediate.
+_Scheduled_ or _delayed_ transactions are transactions where some transfer(s) of resources is/are not immediate.
 
-A delayed transaction is a transaction with an additional information about an absolute game time unit. The amount to be transferred in this _delayed_ transaction has to be completed (strictly) _before_ this absolute game time.
+A delayed transaction is a transaction with an additional information about an absolute game time unit. The amount in this _delayed_ transaction has to be completely transferred (strictly) _before_ this absolute game time unit.
 
-When the game's clock ticks to this absolute time unit, it will tell the judge that there is some delayed transaction that should be checked for having been completed. The judging party will then check if the transactions has been completed by the players participating in the scheduled transaction. If the player that was supposed to transfer the resources did not transfer the exact amount of resources it was supposed to, this player will be considered as a cheater.
+When the game's clock ticks to this absolute time unit, it will tell the judge that there is some delayed transaction that should be checked for having been completed. The judging party will then check if the transactions have been completed by the players participating in the scheduled transaction. If the player that was supposed to transfer the resources did not transfer the exact amount of resources it was supposed to, this player will be considered as a cheater.
 
 Just like immediate transactions, delayed transactions can be either _unidirectional_ or _bidirectional_.
 A bidirectional transaction is said to be _delayed_ or _scheduled_ if and only if at least one of the two unidirectional transactions is it composed of, is a delayed transaction.
 
 #### Voting promises transactions
 Voting promises are a type of delayed transactions.
-Voting promises are promises that a given player will vote a given number of time before a given absolute game's time unit.
+Voting promises are promises that a given player will cast a given number of votes to the _recipient_ of the transaction before a given absolute game's time unit.
 
 #### Valid transaction 
 A _transaction_ is said to be _valid_ if and only if: 
