@@ -14,7 +14,7 @@ In this paper, we are going to focus on contracts that can be modeled as _transa
 More specifically, we are going to do a case study using the Downsizing Game invented by <!-- \cite{downgame} -->.
 The Downsizing Game puts in place multiple players that are all pursuing the same goal of maximizing their own profit while trying to lower the one of the other ones in order to either make the other ones lose the game or win the game themselves.
 Players can make transactions between each other in order to trade every sort of resources that is available in the game.
-The goal of the case study is to see what are the steps to put in place a judging party that will enforce security protocol rules and make sure that all participants of an exchange, here players of the game, respect the rules, and punish them in case they do not. Thorough our work setting up such a system and environment, we will report on the issues we face, the solution we find and the decision we make with the justifications for such choices.
+The goal of the case study is to see what are the steps to put in place a judging party that will enforce security protocol rules and what are the security requirements we can add on top of the functional requirements. Thorough our work setting up such a system and environment, we will report on the issues we face, the solution we find and the decision we make with the justifications for such choices.
 
 <!--\keywords{security, security protocols} -->
 <!--\end{abstract} -->
@@ -22,34 +22,73 @@ The goal of the case study is to see what are the steps to put in place a judgin
 # Introduction
 
 ## The Downsizing Game
-The Downsizing Game puts in place multiple players that are all pursuing the same goal of maximizing their own profit while trying to lower the one of the other ones in order to either make the other ones lose the game or win the game themselves. Players also have to gain the maximum amount of "votes" in order to win the game.
+The Downsizing Game puts in place multiple players that are all pursuing the same goal of maximizing their own profit. Players also have to gain the maximum amount of "votes" in order to win the game.
 
 Players can make transactions between each other in order to trade every sort of resources that is available in the game: Money, trust, loyalty, and votes.
-Every given amount of time, a _voting round_ takes places. On voting rounds, _all_ players should vote for _another_ player.
 
-<!-- 
-\vspace{1\baselineskip}
- -->
+Every 100 rounds, a _voting round_ takes places. On voting rounds, _all_ players should vote for _another_ player. We will describe the game in details in [][gamerules]
 
-The Downsizing Game rules are stated as follows:
+## Objective
 
-- The game has a fixed length, defined in number of rounds.
-- A fixed number of players participate in the game.
+The objective, in this paper, is to use the Downsizing Game as a example to study the process of a small-sized 
+software development project that would start with functional requirements and then add security requirements.
+
+Thorough our design and implementation, we will report on the issues we faced and the solutions and decisions we took to overcome them, along with the justifications of such choices. We think this material can be of some interest to computer sciences students or beginners in providing them with a concrete and detailed example.
+
+The work will indeed be split into 3 main steps:
+
+1. Functional requirements: design & implementation
+2. Security requirements: design & implementation 
+3. Comparison against coding guidelines
+
+The second step of the work will bring security requirements that we found to be necessary to be added by intuition. By simply thinking about the different cases that will be faced in the game and what could be attempted by player to cheat on the game and what should be done to ensure those cheating attempts will fail.
+
+In the last step, we will compare our already security-aware application to coding guidelines and conclude on what we were
+able to fulfill or not of those guidelines, what applies here and what does not, and what following those guidelines would
+have changed in the cases where the guidelines would not have been followed.
+
+# Case Study [cs]
+
+## Assumptions
+
+In our design and implementation of the Downsizing Game, we will start from the following assumptions:
+
+- There is no communication layer between the different part of the game (eg. : No networking)
+- Everything is happening in the same process on a single CPU machine. That is to say: only one instruction can be executed at a time, there is no parallelism/concurrency.
+- The technology used to develop the game prevents arbitrary memory from being read. A player program will thus not be allowed to access data from objects it has been given an explicit pointer and/or reference to it.
+
+The reason why we want to work under those assumptions is that the focus here is to be put on the security of the interaction protocol between players and the implementation of the judging party. A communication layer would bring with it all sorts of communication-related security concerns that are not of interest here. The same reason goes for parallelism and/or concurrency.
+
+## Functional Requirements
+
+The functional requirements are the set of features that our instance of the Downsizing Game should implement/respect.
+
+### Game's rules [gamerules]
+
+The rules of our instance of the Downsizing Game will be stated as follows:
+- The game has a fixed length of 1,000 rounds.
+- 3 players participate in the game.
+- Players can only participate once in the game.
 - Every player is given a million units of the game currency (let us call it dollars) at the beginning of the game.
 - At the end of the game, every player must return the original one million dollars that she was given in the beginning,  she can keep the remainder of the money for her.
 - If players cannot give back the entire amount of money that they were given in the beginning, they have contracted a debt that they will have to reimburse.
 - Players can make transactions between each other about every available resource in the game.
 - A judging party enforces the game's rules and manages transaction, ensuring their validity and preventing players from cheating.
+- There are 10 voting rounds: rounds 100, 200, 300, 400, 500, 600, 700, 900 and 1000.
 - All players must vote on voting rounds.
-- Players must cast exactly $X$ votes at every voting rounds. Choice of $X$ will be left to implementation.
+<!--% Note: I chose 1 vote because if we have 3 players and 2 votes, then they are forced to vote for everyone...-->
+- Players must cast exactly 1 vote at every voting rounds.
 - Players can not vote for themselves.
 - At the end of the game, the players with the most votes win. The ones with the least votes lose.
+- The winning player earns 1 million dollars.
 
 As a consequence of these rules, here are some examples of possible basic strategies:
 
-- A player can try to get the maximum amount of votes, in order to be the winner.
+- A player can try to get the maximum amount of votes, in order to be the winner, thus maximizing profit by getting the winning prize.
 - A player can try to maximize its profit, without caring about votes. She will not win but will still make profit out of the game, as she will keep the remainder of the money after giving back the original one million dollars.
 
+
+## Additional Security Requirements
 
 ### Definitions
 
@@ -83,10 +122,10 @@ In our case study, the set of resources will be fixed at the beginning of the ga
 
 - Trust
 - Loyalty
-- Cash / money / currency
+- Cash/money/currency
 - Voting promises
 
-However, a more complex scenario would be to give players an interface to declare the tradable resources they have to the judging party. Such an interface would basically take as argument the name of the resource and the original balance / initial quantity of this resource that the player possesses, so that the judging party can check, when validating transactions, that the player is not making up new amounts of its self-made resource between every round.
+However, a more complex scenario would be to give players an interface to declare the tradable resources they have to the judging party. Such an interface would basically take as argument the name of the resource and the original balance/initial quantity of this resource that the player possesses, so that the judging party can check, when validating transactions, that the player is not making up new amounts of its self-made resource between every round.
 
 Such study is left for future work but would allow to model real life trade where businesses might have exclusive resources that they are alone to possess, compared to everyone trading the same resources.
 
@@ -94,7 +133,7 @@ Such study is left for future work but would allow to model real life trade wher
 An _amount_ is a defined, positive integer, quantity of a resource.
 
 #### Transactions
-A _transaction_ is one or multiple transfer(s) of _fixed amounts_ of resources between two _identified / authenticated_ players. The player _sending_ the resource will later be referred either as the _sending player_ or _paying player_ or _payer_ or _sender_. The player _receiving_ the resource will later be referred either as the _receiving player_ or _paid player_ or _payee_ or _recipient_.
+A _transaction_ is one or multiple transfer(s) of _fixed amounts_ of resources between two _identified/authenticated_ players. The player _sending_ the resource will later be referred either as the _sending player_ or _paying player_ or _payer_ or _sender_. The player _receiving_ the resource will later be referred either as the _receiving player_ or _paid player_ or _payee_ or _recipient_.
 
 A transaction can either be unidirectional, that is to say, a player transfers resource to another player and that is all,  or bidirectional. In the latter case, two players transfer resources to each other.  
 
@@ -105,7 +144,7 @@ _Immediate_ transactions are the basic transactions: As soon as the transaction 
 
 As a consequence, when a player agrees on an _immediate_ transaction, she is assured that the transaction will be fulfilled if it's validated by the judging party.
 
-#### Delayed / scheduled transactions
+#### Delayed/scheduled transactions
 _Scheduled_ or _delayed_ transactions are transactions where some transfer(s) of resources is/are not immediate.
 
 A delayed transaction is a transaction with an additional information about an absolute game time unit. The amount in this _delayed_ transaction has to be completely transferred (strictly) _before_ this absolute game time unit.
@@ -127,14 +166,7 @@ A _transaction_ is said to be _valid_ if and only if:
 
 A bidirectional transaction will be considered as valid is both unidirectional transactions it is composed of are valid. If any of them is not, then the bidirectional transaction is also invalid.
 
-<!-- 
-%# Related work... ?
-%
-%We're inventors! We do not need HISTORY!
-
--->
-
-# Experimental work / Implementation
+# Experimental work/Implementation
 ## Players authentication
 
 At the beginning of the game, every player is given a unique password that she will have to pass along with every call she does to the judging party's interface in order to prove this call is coming from the player it is said it comes from.
@@ -164,7 +196,7 @@ In the case of immediate transactions, the judge checks. The balance has to be e
 
 In the case of scheduled transactions, the judge will not check the balance, as the player could have planned to make other agreements with other players between the round where the current transaction is being validated and the round where the payment deadline is set.
 
-That means that a scheduled, or delayed transaction, is not safe by itself, as the judging party cannot guarantee that the payment will be made. Mitigation /  punishment in case of lack of payment will be described later.
+That means that a scheduled, or delayed transaction, is not safe by itself, as the judging party cannot guarantee that the payment will be made. Mitigation/punishment in case of lack of payment will be described later.
 
 #### Rounds
 On **every round**, the judging party will always check for completeness of scheduled transactions **before** any other action is taken, including before the current player plays.
@@ -201,38 +233,48 @@ For instance, the judging party object is not passed to the players. only pointe
 Another example is transactions objects. Transactions are instantiated by the player and passed to the judge. A player could try to change the transaction object between it is validated and applied, thus making the transaction applied without having been checked on the values it has when it is applied. 
 In order to mitigate this, we make a copy of the transaction passed by the player. The player thus do not have a pointer to the object we are going to use anymore. We can then validate and apply the transaction without risks of tampering. The same process is used when passing transactions as a parameter at the step of "player agreement" check (where we check the player agrees with the currently being validated transaction).
 
+# Roadmap
+
+The roadmap for now is to continue the implementation of the Downsizing Game as described in the current paper and then compare this implementation against the following coding guidelines:
+
+- [FIXME I AM MISSING].
+
+If we have enough, time we will try to compare against other coding guidelines. 
+
+**Reviewers suggestions are welcomed.** If reviewers have specific coding guidelines that would best fit this case study in mind, they can suggest it along with their review.
+
 # Appendix
 
 ### Game initialization
     Game::init
-        self.clock = initialize_clock()
-        self.judge = initialize_judge()
+        clock = initialize_clock()
+        judge = initialize_judge()
         decide_of_player_ids()
-        self.players_starting_resources =   allocate starting resources 
+        players_starting_resources =   allocate starting resources 
                                             storage structure for every 
                                             player id
-        self.players = instantiate every player with a player id 
+        players = instantiate every player with a player id 
                        and a copy of its starting resources data 
                        and a copy of its allowed "interface" (set of functions)
-        self.judge.setPlayers(self.players)
+        judge.setPlayers(players)
 
 
 ### Pseudo-code of a round:
     Game::play
-        while self.judge.play_round():
+        while judge.play_round():
             pass
 
     Judge::play_round
-        for pid in self.game.players_ids:
-            p = self.players[pid]
+        for pid in game.players_ids:
+            p = players[pid]
             try:
-                self.current_pid = pid
+                current_pid = pid
                 p.play_round()
             except PlayerKilledException as e:
-                self.game.loser = e.player
+                game.loser = e.player
                 return False
-            self.clock.tick()
-            if self.clock.is_over():
+            clock.tick()
+            if clock.is_over():
                 return False
             return True
 
