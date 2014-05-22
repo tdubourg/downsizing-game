@@ -39,11 +39,11 @@ The Downsizing Game rules are stated as follows:
 - At the end of the game, every player must return the original one million dollars that she was given in the beginning,  she can keep the remainder of the money for her.
 - If players cannot give back the entire amount of money that they were given in the beginning, they have contracted a debt that they will have to reimburse.
 - Players can make transactions between each other about every available resource in the game.
-- A judging party overlooks at the game manages transaction,  ensuring their validity and preventing players from cheating.
+- A judging party enforces the game's rules and manages transaction, ensuring their validity and preventing players from cheating.
 - All players must vote on voting rounds.
 - Players must cast exactly $X$ votes at every voting rounds. Choice of $X$ will be left to implementation.
 - Players can not vote for themselves.
-- At the end of the game, the player with the most votes wins. The one with the least votes loses.
+- At the end of the game, the players with the most votes win. The ones with the least votes lose.
 
 As a consequence of these rules, here are some examples of possible basic strategies:
 
@@ -57,7 +57,7 @@ As a consequence of these rules, here are some examples of possible basic strate
 Players play on a turn-by-turn basis. We will call _current player_ the player of which it is currently the turn. The current player is the only one that can make calls to the judging party's interface.
 
 #### Rounds
-A _round_ is an atomic unit of time in the game. A round can thus not be divided into subrounds. A round passes every time the following actions are executed:
+A _round_ is an atomic unit of time in the game. A round can thus not be divided into subrounds. A round passes every time any of the following actions is executed:
 
 - A transaction is applied
 - Changing the current player
@@ -67,9 +67,14 @@ A _round_ is an atomic unit of time in the game. A round can thus not be divided
 A voting round is a round where, __before__ any action is taken (before even the current player plays), all players will be asked to vote according with the game's rules.
 
 #### Cheater
-A cheater is a player that breaks a game's rule. Cheaters are immediately killed and thus removed from the game. If,  at the moment they are killed they owe some resources to another player,  the remaining resources of the killed player will be transferred to the one they were owed to,  up the owed amount,  and up to the remaining balance of this resource on this killed player account.
-If they owe resources to multiple players. The judging party will try to give the remaining balance amount to "loaners players" in historical order. [note: Better solution?  If we want to divide it equally we need to do it with some sort of incremental algorithm: first try to divide equally,  then,  sum up the amount of money that remain after taking into account the exact debt amounts,  in case any debt amount was smaller than the balance divided equally,  then re-directed this balance equally,  and so on until there is either no debt left or no money left...]
+A cheater is a player that breaks a game's rule. Cheaters are immediately killed and thus removed from the game. If,  at the moment they are killed they owe some resources to another player,  the remaining resources of the killed player will be transferred to the one they were owed to, up the owed amount,  and up to the remaining balance of this resource on this killed player account.
+If they owe resources to multiple players. The judging party will distribute the money proportionately, rounded to the closest integer. The exact formula is:
 
+$$part\ of\ the\ remaining\ balance\ you\ get = round(\cfrac{total\ amount\ cheater\ owed\ to\ you}{total\ debt\ of\ the\ cheater})$$
+
+<!-- 
+%[note: Better solution?  If we want to divide it equally we need to do it with some sort of incremental algorithm: first %try to divide equally,  then,  sum up the amount of money that remain after taking into account the exact debt amounts,  %in case any debt amount was smaller than the balance divided equally,  then re-directed this balance equally,  and so on %until there is either no debt left or no money left...]
+ -->
 #### Resources
 
 A _resource_ is a quantity that is allowed to be traded by the judging party.
@@ -93,7 +98,7 @@ A _transaction_ is one or multiple transfer(s) of _fixed amounts_ of resources b
 
 A transaction can either be unidirectional, that is to say, a player transfers resource to another player and that is all,  or bidirectional. In the latter case, two players transfer resources to each other.  
 
-A bidirectional transaction is _composed_ of two unidirectional transactions.
+A bidirectional transaction is composed (in the OOP meaning) of two unidirectional transactions.
 
 #### Immediate transactions
 _Immediate_ transactions are the basic transactions: As soon as the transaction is validated, the transfer(s) of resources is/are applied. There can be no other interaction, nothing else can happen in the game between validation and application of the transaction.
@@ -108,7 +113,7 @@ A delayed transaction is a transaction with an additional information about an a
 When the game's clock ticks to this absolute time unit, it will tell the judge that there is some delayed transaction that should be checked for having been completed. The judging party will then check if the transactions have been completed by the players participating in the scheduled transaction. If the player that was supposed to transfer the resources did not transfer the exact amount of resources it was supposed to, this player will be considered as a cheater.
 
 Just like immediate transactions, delayed transactions can be either _unidirectional_ or _bidirectional_.
-A bidirectional transaction is said to be _delayed_ or _scheduled_ if and only if at least one of the two unidirectional transactions is it composed of, is a delayed transaction.
+A bidirectional transaction is said to be _delayed_ or _scheduled_ if and only if at least one of the two unidirectional transactions it is composed of, is a delayed transaction.
 
 #### Voting promises transactions
 Voting promises are a type of delayed transactions.
@@ -118,7 +123,7 @@ Voting promises are promises that a given player will cast a given number of vot
 A _transaction_ is said to be _valid_ if and only if: 
 
 - Transaction does not break a game rule. 
-- Transaction is able to be completed to the extent of the judging party’s knowledge. (eg. : Enough money on the account, in case of a money transfer).
+- Transaction is able to be completed to the extent of the judging party’s knowledge. (eg. : Enough money on the account, in case of an immediate money transfer).
 
 A bidirectional transaction will be considered as valid is both unidirectional transactions it is composed of are valid. If any of them is not, then the bidirectional transaction is also invalid.
 
@@ -143,11 +148,10 @@ When asked to perform a new transaction, the judging party will sequencially go 
 
 At every step, if the check fails, the transaction is marked as not valid, and thus, refused.
 
-#### Players mutual
- agreement
+#### Players mutual agreement
 For any transaction validation, the first step that the judge will follow is to ask both involved players whether they confirm that they agree with this transaction.
 
-#### Rational checks
+#### Input validation
 The judge will then perform rational checks. These checks are the following:
 
 - Is the amount smaller than the global amount of resources of this type in the whole game?
@@ -160,10 +164,10 @@ In the case of immediate transactions, the judge checks. The balance has to be e
 
 In the case of scheduled transactions, the judge will not check the balance, as the player could have planned to make other agreements with other players between the round where the current transaction is being validated and the round where the payment deadline is set.
 
-That means that a scheduled, or delayed transaction, is not safe by itself, as the judging party cannot guarantee that the payment will be made. Mitigation / punihment in case of default of payment will be described later.
+That means that a scheduled, or delayed transaction, is not safe by itself, as the judging party cannot guarantee that the payment will be made. Mitigation /  punishment in case of lack of payment will be described later.
 
 #### Rounds
-On **every round**, the judging party will always check for completeness of scheduled transaction **before** any other action is taken, including before the current player plays.
+On **every round**, the judging party will always check for completeness of scheduled transactions **before** any other action is taken, including before the current player plays.
 
 #### Voting rounds
 
@@ -171,7 +175,7 @@ On voting rounds, the judging party will ask for players to vote.
 
 Players should vote immediately, no delay is given. Players should vote according to the rules and they should respect any official vote promise agreement they made via a transaction.
 
-The judging party, for every player's vote, will check that it respects the rule, and then check that it respects vote promises that have been registered via previous transaction. To summerize, a voting round go through the following steps, in order:
+The judging party, for every player's vote, will check that it respects the rule, and then check that it respects vote promises that have been registered via previous transaction. To summarise, a voting round go through the following steps, in order:
 
 1. Check for scheduled transaction completeness, as for any round
 2. Ask every player, one by one, to vote
