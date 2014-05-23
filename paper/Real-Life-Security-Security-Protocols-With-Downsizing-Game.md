@@ -16,13 +16,12 @@ other and making basic contracts between each  other. A contract can take severa
 about how they are going to communicate,  a contract  between two business men about a deal between their respective
 companies,  etc. .  In this paper, we are going to focus on contracts that can be modeled as _transactions_ sequences. More
 specifically, we are going to do a case study using the Downsizing Game invented by <!-- \cite{downgame} -->. The Downsizing
-Game puts in place multiple players that are all pursuing the same goal of maximizing their own profit while  trying to lower
-the one of the other ones in order to either make the other ones lose the game or win the game themselves. Players can make
+Game puts in place multiple players that are all pursuing the same goal of maximizing their own profit. Players can make
 transactions between each other in order to trade every sort of resources that is available in the game. The goal of the case
 study is to see what are the steps to put in place a judging party that will enforce security protocol rules and what are the
 security requirements we can add on top of the functional requirements. Thorough our work setting up such a system and
-environment, we will report on the issues we face, the solution we find and the decision we make with the justifications for
-such choices.
+environment, we will report on the issues we face, the solutions we find and the decision we make with the justifications 
+for such choices.
 
 <!--
 \keywords{security, security protocols}
@@ -32,8 +31,7 @@ such choices.
 # Introduction
 
 ## The Downsizing Game 
-The Downsizing Game puts in place multiple players that are all pursuing the same goal of maximizing their own profit.  This
-is a test of wrapping
+The Downsizing Game puts in place multiple players that are all pursuing the same goal of maximizing their own profit.
 Players also have to gain the maximum amount of "votes" in order to win the game.
 
 Players can make transactions between each other in order to trade every sort of resources that is available in the game: 
@@ -42,7 +40,8 @@ Money, trust, loyalty, and votes.
 Every 100 rounds, a _voting round_ takes places. On voting rounds, _all_ players should vote for _another_ player. We will 
 describe the game in details in [][gamerules]
 
-[FIXME: ADD SOMETHING ABOUT THE GAME BEING COMPLEX / DIFFERENT BEHAVIOURS]
+Although it may seem like a simple game, players behaviour can largely vary between each other, which makes ensuring that
+everything goes as it should not completely trivial.
 
 ## Objective
 
@@ -51,7 +50,7 @@ software development project that would start with functional requirements and t
 
 Thorough our design and implementation, we will report on the issues we faced and the solutions and decisions we took to 
 overcome them, along with the justifications of such choices. We think this material can be of some interest to computer 
-sciences students or beginners in providing them with a concrete and detailed example.
+science students or beginners in providing them with a concrete and detailed example.
 
 The work will indeed be split into 3 main steps:
 
@@ -78,7 +77,7 @@ have changed in the cases where the guidelines would not have been followed.
 
 In our design and implementation of the Downsizing Game, we will start from the following assumptions:
 
-1. There is no communication layer between the different part of the game (eg. : No networking)
+1. There is no communication layer between the different part of the game (e.g. : No networking)
 2. Everything is happening in the same process on a single CPU machine. That is to say: only one instruction can be executed 
 at a time, there is no parallelism/concurrency.
 3. The technology used to develop the game prevents arbitrary memory from being read. A player program will thus not be 
@@ -224,7 +223,7 @@ of votes to the _recipient_ of the transaction before a given absolute game's ti
 A _transaction_ is said to be _valid_ if and only if: 
 
 - Transaction does not break a game rule. 
-- Transaction is able to be completed to the extent of the judging party’s knowledge. (eg. : Enough money on the account, 
+- Transaction is able to be completed to the extent of the judging party’s knowledge. (e.g. : Enough money on the account, 
 in case of an immediate money transfer).
 
 A bidirectional transaction will be considered as valid if both unidirectional transactions it is composed of are valid. If
@@ -252,7 +251,7 @@ of another player instead of their own quota.
 There should be no other interaction, no change to the state of the game should happen between validation and application of
 an immediate transaction.
 
-This is partially guaranteed by the assumptions of no paralellism/concurrency. Although, a player program could still manage
+This is partially guaranteed by the assumptions of no parallelism/concurrency. Although, a player program could still manage
 to steal the CPU (effectively pausing the judging party program's execution) and try to change the state of the game by
 submitting other transaction for instance. A player could use such an attack to submit multiple transactions that will be
 validated on the same balances but executed on different balances.
@@ -305,7 +304,7 @@ players and those pointers cannot be tampered by the other players (as [per assu
 
 ### Transaction validation
 
-When asked to perform a new transaction, the judging party will sequencially (in the order below) go through multiples steps, or checks.
+When asked to perform a new transaction, the judging party will sequentially (in the order below) go through multiples steps, or checks.
 
 At every step, if the check fails, the transaction is marked as not valid, and thus, refused.
 
@@ -362,7 +361,7 @@ order:
 As _final_ objects do not exist in Python, we make sure critical objects are not accessible by the players.
 
 For instance, the judging party object is not passed to the players. only pointers to its methods. Thus, players can still
-call methods of the juding party but cannot override any attribute of the judging party's instance, like resources balances,
+call methods of the judging party but cannot override any attribute of the judging party's instance, like resources balances,
 for instance.
 
 Another example is transactions objects. Transactions are instantiated by the player and passed to the judge. A player could
@@ -390,14 +389,14 @@ The following parts / rules of the game / previous decisions could be changed in
 complex but a little bit more realistic in some way:
 
 - When a cheater is killed, distributions the resources so that we try to minimize the amount of debts remaining open or so
-that we minimize the disatisfaction of the loaners.
+that we minimize the dissatisfaction of the loaners.
 - Allowing players to trade points of their score (a score trade directly adds points to the score, without the "voting" step)
 - Give players an interface to declare the tradable resources they have to the judging party. It would allow to model real life 
 trade where businesses might have exclusive resources that they are alone to possess, compared to everyone trading the same resources.
 - [FIXME: Other suggestions?]
 
 The same way as for the guidelines, if we get additional time we will look into those issues first. If the reviewers have
-suggestions of complexifications that they think would be of higher prioritym they are welcomed to include those suggestions
+suggestions of complexifications that they think would be of higher priority they are welcomed to include those suggestions
 in the review comments.
 
 **Reviewers suggestions are welcomed.** If reviewers have specific coding guidelines that would best fit this case study
