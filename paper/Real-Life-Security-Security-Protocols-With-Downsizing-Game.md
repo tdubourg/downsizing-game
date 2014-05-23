@@ -45,8 +45,10 @@ everything goes as it should not completely trivial.
 
 ## Objective
 
-The objective, in this paper, is to use the Downsizing Game as a example to study the process of a small-sized 
+The objective, in this paper, is to use the Downsizing Game as an example to study the process of a small-sized 
 software development project that would start with functional requirements and then add security requirements.
+
+We want to build a platform to allow players to play the Downsizing Game but we do not want any cheaters.
 
 Thorough our design and implementation, we will report on the issues we faced and the solutions and decisions we took to 
 overcome them, along with the justifications of such choices. We think this material can be of some interest to computer 
@@ -66,10 +68,7 @@ In the last step, we will compare our already security-aware application to codi
 able to fulfill or not of those guidelines, what applies here and what does not, and what following those guidelines would
 have changed in the cases where the guidelines would not have been followed.
 
-[FIXME: ADD SOMETHING ABOUT THE GAME BEING COMPLEX / DIFFERENT BEHAVIOURS]
-[FIXME: ADD SOMETHING ABOUT "WE WANT TO BUILD A PLATFORM BUT NO CHEATERS"]
-[FIXME: ADD SOMETHING ABOUT "HOW SECURE CAN I CODE?"]
-
+We will look at the last step as a partial answer to the question "How secure can I code?".
 
 # Case Study [cs]
 
@@ -77,16 +76,15 @@ have changed in the cases where the guidelines would not have been followed.
 
 In our design and implementation of the Downsizing Game, we will start from the following assumptions:
 
-1. There is no communication layer between the different part of the game (e.g. : No networking)
+1. There is no communication layer between the different part of the game (e.g. : no networking)
 2. Everything is happening in the same process on a single CPU machine. That is to say: only one instruction can be executed 
 at a time, there is no parallelism/concurrency.
-3. The technology used to develop the game prevents arbitrary memory from being read. A player program will thus not be 
-allowed to access data from objects it has been given an explicit pointer and/or reference to it.
+3. The technology used to develop the game prevents arbitrary memory from being read. A player program will thus only be 
+allowed to access data from objects it has been given an explicit pointer and/or reference to.
 
-The reason why we want to work under those assumptions is that the focus here is to be put on the security of the 
-interaction protocol between players and the implementation of the judging party. A communication layer would bring with 
-it all sorts of communication-related security concerns that are not of interest here. The same reason goes for parallelism
- and/or concurrency.
+The reason for working under those assumptions is that the focus here on the security of the interaction protocol between
+players and the implementation of the judging party. A communication layer would bring with  it all sorts of communication-
+related security concerns that are not of interest here. The same reason goes for parallelism  and/or concurrency.
 
 ## Functional Requirements
 
@@ -99,28 +97,33 @@ The rules of our instance of the Downsizing Game will be stated as follows:
 - The game has a fixed length of 1,000 rounds.
 - 3 players participate in the game.
 - Players can only participate once in the game.
-- Every player is given a million units of the game currency (let us call it dollars) at the beginning of the game.
+- Every player is given a million units of the game currency (let us call it dollars) and a hundred of the other resources 
+at the beginning of the game. [FIXME: The other resources start a 0 or 100? What does "buying some trust" actually mean?]
 - At the end of the game, every player must return the original one million dollars that she was given in the beginning, 
 she can keep the remainder of the money for her.
-- If players cannot give back the entire amount of money that they were given in the beginning, they have contracted a 
+- At the end of the game, if players cannot give back the entire amount of money that they were given in the beginning, 
+they have contracted a 
 debt that they will have to reimburse.
 - Players can make transactions between each other about every available resource in the game.
-- A judging party enforces the game's rules and manages transaction, ensuring their validity and preventing players 
+- A judging party enforces the game's rules and manages transactions, ensuring their validity and preventing players 
 from cheating.
-- There are 10 voting rounds: rounds 100, 200, 300, 400, 500, 600, 700, 900 and 1000.
+- There are 10 voting rounds: rounds 100, 200, 300, 400, 500, 600, 700, 900 and 1,000.
 - All players must vote on voting rounds.
 <!--% Note: I chose 1 vote because if we have 3 players and 2 votes, then they are forced to vote for everyone...-->
 - Players must cast exactly 1 vote at every voting rounds.
 - Players can not vote for themselves.
-- Every time a player receives a vote, his _score_ increases by 1
+- Every time a player receives a vote, his _score_ increases by 1.
 - At the end of the game, the player(s) with the highest score win(s). The one(s) with the lowest score lose(s).
 - The winning player earns 1 million dollars.
 
+<!-- 
+\vspace{1\baselineskip}
+-->
 As a consequence of these rules, here are some examples of possible basic strategies:
 
 - A player can try to get the maximum amount of votes, in order to be the winner, thus maximizing profit by getting the 
 winning prize.
-- A player can try to maximize its profit, without caring about votes. She will not win but will still make profit out 
+- A player can try to maximize its profit, without caring about votes. She will not win, but will still make profit out 
 of the game, as she will keep the remainder of the money after giving back the original one million dollars.
 
 ### Definitions & needed features
@@ -130,7 +133,7 @@ Players play on a turn-by-turn basis. We will call _current player_ the player o
 
 #### Score
 
-The _score_ of a player at a given round $r$ is the number of votes the player received until now.
+The _score_ of a player at a given round $r$ is the number of votes the player received until $r$.
 
 #### Rounds
 
@@ -143,8 +146,10 @@ any of the following actions is executed:
 
 #### Voting rounds
 
-A voting round is a round where, __before__ any action is taken (before even the current player plays), all players will 
-be asked to vote according with the game's rules.
+A voting round is a round where, **before** any action, all players will be asked to vote as described in the game's rules.
+
+According to the definition of the rounds, no other action can be taken at during a voting round, as a round passes when
+applying the result of a voting round.
 
 #### Cheater
 
@@ -154,7 +159,7 @@ be asked to vote according with the game's rules.
 % necessary for the game itself, it does not, imho, represent a specific security check 
 -->
 
-A cheater is a player that breaks a game's rule. Cheaters are immediately killed and thus removed from the game. If, at the
+A cheater is a player that breaks one or several game's rules. Cheaters are immediately killed and thus removed from the game. If, at the
 moment they are killed they owe some resources to another player, the remaining resources of the killed player will be 
 transferred to the one they were owed to, up the owed amount,  and up to the remaining balance of this resource on this 
 killed player account.
@@ -162,10 +167,7 @@ killed player account.
 If they owe resources to multiple players. The judging party will distribute the money proportionately, rounded to the 
 closest integer. The exact formula is:
 
-$$
-part\ of\ the\ remaining\ balance\ you\ get = 
-round(\cfrac{total\ amount\ cheater\ owed\ to\ you}{total\ debt\ of\ the\ cheater})
-$$
+$$part\ of\ the\ remaining\ balance\ you\ get = round(\cfrac{total\ amount\ cheater\ owed\ to\ you}{total\ debt\ of\ the\ cheater})$$
 
 #### Transactions
 
@@ -174,15 +176,18 @@ players. The player _sending_ the resource will later be referred to either as t
 _payer_ or _sender_. The player _receiving_ the resource will later be referred to either as the _receiving player_ or 
 _paid player_ or _payee_ or _recipient_.
 
-A transaction can either be unidirectional, that is to say, a player transfers resource to another player and that is all,
-or bidirectional. In the latter case, two players transfer resources to each other.
+A transaction can either be unidirectional, that is to say, a player transfers some resource to another player and that is
+all, or bidirectional. In the latter case, two players transfer resources to each other.
 
-A bidirectional transaction is composed (in the OOP meaning) of two unidirectional transactions.
+A bidirectional transaction is composed (in the OOP meaning) of two unidirectional transactions. A bidirectional is **not**
+a special unidirectional transaction (it does not inherit from it).
+
+Every resource except _voting promises_ can be traded using a transaction. Voting promises have to be traded using 
+_voting promises transactions_ [ ][votepromtrans]
 
 #### Resources
 
 A _resource_ is an integer quantity that the judging party allows to trade.
-
 In our case study, the set of resources will be fixed at the beginning of the game, to:
 
 - Trust
@@ -191,7 +196,7 @@ In our case study, the set of resources will be fixed at the beginning of the ga
 - Voting promises
 
 #### Amount
-An _amount_ is a defined, positive integer, quantity of a resource.
+An _amount_ is a defined, positive integer, quantity of a single resource.
 
 #### Immediate transactions
 
@@ -205,14 +210,14 @@ if it's validated by the judging party.
 
 _Scheduled_ or _delayed_ transactions are transactions where some transfer(s) of resources is/are not immediate.
 
-A delayed transaction is a transaction with an additional information about an absolute game time unit. The amount in this
+A delayed transaction is a transaction with an additional information about an **absolute game time unit**. The amount in this
 _delayed_ transaction has to be completely transferred (strictly) _before_ this absolute game time unit.
 
 Just like immediate transactions, delayed transactions can be either _unidirectional_ or _bidirectional_. A bidirectional
 transaction is said to be _delayed_ or _scheduled_ if and only if at least one of the two unidirectional transactions it is
 composed of, is a delayed transaction.
 
-#### Voting promises transactions
+#### Voting promises transactions [votepromtrans]
 
 Voting promises are a type of delayed transactions. Voting promises are promises that a given player will cast a given number
 of votes to the _recipient_ of the transaction before a given absolute game's time unit.
@@ -226,16 +231,19 @@ A _transaction_ is said to be _valid_ if and only if:
 - Transaction is able to be completed to the extent of the judging party’s knowledge. (e.g. : Enough money on the account, 
 in case of an immediate money transfer).
 
-A bidirectional transaction will be considered as valid if both unidirectional transactions it is composed of are valid. If
+A bidirectional transaction will be considered valid if both unidirectional transactions it is composed of are valid. If
 any of them is not, then the bidirectional transaction is also invalid.
 
 
 ## Additional Security Requirements
 
-### Judging party exclusiveness aka turn by turn enforcement
+Functional requirements now defined, we are going to define and describe _security requirements_ that are necessary to ensure
+the players do not exploit singularities of the game in order to achieve behaviours that should not be achieved according to
+the rules.
 
-The current player is the only one that can make calls to the judging party's interface.
+### Judging party exclusiveness aka turn-by-turn enforcement
 
+The _current player_ is the only one that can make calls to the judging party's interface.
 This is needed in order to prevent other players from trying to steal the CPU and make transactions on the transaction quota
 of another player instead of their own quota.
 
@@ -254,22 +262,22 @@ an immediate transaction.
 This is partially guaranteed by the assumptions of no parallelism/concurrency. Although, a player program could still manage
 to steal the CPU (effectively pausing the judging party program's execution) and try to change the state of the game by
 submitting other transaction for instance. A player could use such an attack to submit multiple transactions that will be
-validated on the same balances but executed on different balances.
+validated on the same balances, but executed on different balances.
 
 To avoid this, we will make use of synchronization tools to only allow one concurrent execution of the judging party
-program's code of validation and application of an immediate transaction. This can materialized for instance by the use of
+program's code of validation and application of an immediate transaction. This can be materialized for instance by the use of
 operating system's _mutex_ tools, but any other synchronization tool providing equal guarantees can be used too.
 
 ### Delayed/scheduled transactions completion
 
-As delayed transactions are validated without the transfers of resources actually taking place and have a deadline for this
+Delayed transactions are validated without the transfers of resources actually taking place and have a deadline for this
 transfer to happen. It has to be checked that the transfer was indeed done strictly before the deadline.
 
-When the game's clock ticks to this absolute time unit, it will tell the judge that there is some delayed transactions that
+When the game's clock ticks to this absolute time unit (the deadline), it will tell the judge that there is some delayed transactions that
 should be checked for having been completed. The judging party will then check if the transactions have been completed by the
 players participating in the scheduled transaction.  Checks for completion of delayed transaction will **always** be
 performed **before any other action** can be taken in the current round. If the player that was supposed to transfer the
-resources did not transfer the exact amount of resources it was supposed to, this player will be considered as a cheater.
+resources did not transfer the exact amount of resources it was supposed to, this player will be considered a cheater.
 
 Note that in order to guarantee that the current player is not able to talk to the judging party before the end of the
 delayed transactions checks, we will once more make use of synchronization tools, as in the case of  immediate transactions
@@ -277,20 +285,22 @@ delayed transactions checks, we will once more make use of synchronization tools
 
 But in order to be able to tell the difference between transfers of resources related to new deals between two players and
 transfers of resources related to completion of a scheduled/delayed transaction, we need an additional, special type of
-transaction. We will call it "subtransactions".
-
+transaction. We will call it "subtransaction".
+<!-- 
+\vspace{1\baselineskip}
+-->
 A **subtransaction** is an **immediate** transaction that contains an additional information about the delayed transaction
 is it related to.
 
-When the judging party;s has to check that the delayed transaction was indeed completed, it will go through all
+When the judging party has to check that the delayed transaction was indeed completed, it will go through all
 subtransactions that were made since the round of the delayed transaction between the same two players and sum everything
-up. The sum has to be **exactly** what was initially agreed in the delayed transaction. If it is the case, then the
-transaction can be marked as completed.
+up. The sum has to be **exactly** what was initially agreed in the delayed transaction. If and only if it is the case, 
+then the transaction can be marked as completed.
 
 ### Players authentication
 
 When creating a transaction, a player could provide false information about the participants in this transaction and thus
-try to impersonate other players and make transactions on their behalf.
+attempt to impersonate other players and make transactions on their behalf.
 
 As a consequence, we need a mechanism to authenticate the players and be sure that the player who submitted a request in her
 name, is indeed the player she is saying she is.
@@ -302,25 +312,27 @@ to prove this call is coming from the player it is said it comes from.
 When the judging party calls players itself, the authentication is assured as the judging party has direct pointers to every
 players and those pointers cannot be tampered by the other players (as [per assumption 3][Assumptions])
 
-### Transaction validation
+### Transactions validation
 
 When asked to perform a new transaction, the judging party will sequentially (in the order below) go through multiples steps, or checks.
 
 At every step, if the check fails, the transaction is marked as not valid, and thus, refused.
 
-### Players mutual agreement
+#### Players mutual agreement
 
 For any transaction validation, the first step that the judge will follow is to ask both involved players whether they
-confirm that they agree with this transaction.
+confirm that they agree with this transaction. Both players have to answer "yes" for this check to succeed.
 
-### Input validation
+#### Input validation
 The judge will then perform rational checks. These checks are the following:
 
-- Is the amount smaller than the global amount of resources of this type in the whole game?
+- Is the amount a **positive integer**? (avoiding resources "generation" with negative values, and rounding errors exploits
+if we were to use real numbers)
+- Is the amount smaller than the global amount of resources of this type in the entire game?
 - In case of voting promise, is the amount smaller than the number of votes the player will be able to cast before the end 
 of the game? (voting rounds multiplied by votes per player and per voting round)
 
-### Balance check
+#### Balance check
 
 The judge will then check the balance of the player _from_ which the transfer is going to happen for the resource that is
 going to be transferred.
@@ -337,12 +349,12 @@ payment will be made. Mitigation/punishment in case of lack of payment will be d
 
 ### Voting rounds
 
-On voting rounds, the judging party will ask for players to vote.
+On voting rounds, the judging party will ask players to vote.
 
 Players should vote immediately, no delay is given. Players should vote according to the rules and they should respect any
 official vote promise agreement they made via a transaction.
 
-The judging party, for every player's vote, will check that it respects the rule, and then check that it respects vote
+The judging party, for every player's vote, will check that it respects the rules, and will then check that it respects vote
 promises that have been registered via previous transaction. To summarise, a voting round go through the following steps, in
 order:
 
@@ -354,19 +366,22 @@ order:
 6. Publicly disclose the new number of votes that every player received and their new score.
 7. Allow the current player to play
 
+[FIXME: Voting promises model: next round / versus a transaction generated by every vote]
+
+
 ## Miscellaneous security measures
 
 ### Python-related security measures
 
-As _final_ objects do not exist in Python, we make sure critical objects are not accessible by the players.
+As _final_ objects do not exist in Python, we have to make sure critical objects are not accessible by the players.
 
-For instance, the judging party object is not passed to the players. only pointers to its methods. Thus, players can still
+For instance, the judging party object is not passed to the players, only pointers to its methods. Thus, players can still
 call methods of the judging party but cannot override any attribute of the judging party's instance, like resources balances,
 for instance.
 
 Another example is transactions objects. Transactions are instantiated by the player and passed to the judge. A player could
 try to change the transaction object between it is validated and applied, thus making the transaction applied without having
-been checked on the values it has when it is applied.
+been checked on the attributes values it holds when it is applied.
 
 In order to mitigate this, we make a copy of the transaction passed by the player. The player thus do not have a pointer to
 the object we are going to use anymore. We can then validate and apply the transaction without risks of tampering. The same
@@ -385,8 +400,8 @@ If we have enough time, we will try to compare against other coding guidelines.
 
 ## Game complexification
 
-The following parts / rules of the game / previous decisions could be changed in order to make the game a little bit more
-complex but a little bit more realistic in some way:
+The following parts and/or rules of the game and/or previous decisions could be changed in order to make the game a little 
+bit more complex but a little bit more realistic in some way:
 
 - When a cheater is killed, distributions the resources so that we try to minimize the amount of debts remaining open or so
 that we minimize the dissatisfaction of the loaners.
@@ -398,12 +413,16 @@ trade where businesses might have exclusive resources that they are alone to pos
 The same way as for the guidelines, if we get additional time we will look into those issues first. If the reviewers have
 suggestions of complexifications that they think would be of higher priority they are welcomed to include those suggestions
 in the review comments.
-
+<!-- 
+\vspace{1\baselineskip}
+ -->
 **Reviewers suggestions are welcomed.** If reviewers have specific coding guidelines that would best fit this case study
  in mind, they can suggest it along with their review.
 
 # Appendix
-
+[FIXME: This section, alone, does not really make any sense. I think we should either make a small presentation of the
+implementation / game flow somewhere or completely remove anything related to game flow / implementation fro, th extended
+abstract, keeping this for the final version of the paper.]
 ### Game initialization
     Game::init
         clock = initialize_clock()
