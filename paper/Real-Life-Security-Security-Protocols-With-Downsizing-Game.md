@@ -403,7 +403,7 @@ If we have enough time, we will try to compare against other coding guidelines.
 The following parts and/or rules of the game and/or previous decisions could be changed in order to make the game a little 
 bit more complex but a little bit more realistic in some way:
 
-- When a cheater is killed, distributions the resources so that we try to minimize the amount of debts remaining open or so
+- When a cheater is killed, distributions of the cheater's remaining resources so that we try to minimize the amount of debts remaining open or so
 that we minimize the dissatisfaction of the loaners.
 - Allowing players to trade points of their score (a score trade directly adds points to the score, without the "voting" step)
 - Give players an interface to declare the tradable resources they have to the judging party. It would allow to model real life 
