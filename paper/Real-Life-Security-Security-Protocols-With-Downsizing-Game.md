@@ -11,27 +11,26 @@ latex input:        mmd-article-begin-doc
 \begin{abstract}
 --> 
 
-Real life security use cases often include multiple parties talking to each
-other and making basic contracts between each  other. A contract can take several forms: A contract between two programs
-about how they are going to communicate,  a contract  between two business men about a deal between their respective
-companies,  etc. .  In this paper, we are going to focus on contracts that can be modeled as _transactions_ sequences. More
-specifically, we are going to do a case study using the Downsizing Game invented by <!-- \cite{downgame} -->. The Downsizing
-Game puts in place multiple players that are all pursuing the same goal of maximizing their own profit. Players can make
-transactions between each other in order to trade every sort of resources that is available in the game. The goal of the case
-study is to see what are the steps to put in place a judging party that will enforce security protocol rules and what are the
-security requirements we can add on top of the functional requirements. Thorough our work setting up such a system and
-environment, we will report on the issues we face, the solutions we find and the decision we make with the justifications 
-for such choices.
+Real life security use cases often include multiple parties talking to each other and making basic contracts between each  other. A
+contract can take several forms: A contract between two programs about how they are going to communicate,  a contract  between two
+business men about a deal between their respective companies,  etc. .  In this paper, we are going to focus on contracts that can be
+modeled as _transactions_ sequences. More specifically, we are going to do a case study using the Downsizing Game invented by <!--
+\cite{downgame} -->. The Downsizing Game puts in place multiple players that are all pursuing the same goal of maximizing their own
+profit. Players can make transactions between each other in order to trade every sort of resources that is available in the game. The
+goal of the case study is to see what are the steps to put in place a judging party that will enforce security protocol related to
+cheating  prevention and what are the security requirements we can add on top of the functional requirements. Thorough our work setting
+up such a system and environment, we will report on the issues we face, the solutions we find and the decision we make with the
+justifications  for such choices.
 
 <!--
-\keywords{security, security protocols}
+\keywords{enforcement, security, security protocols}
 \end{abstract}
 -->
 
 # Introduction
 
 ## The Downsizing Game 
-The Downsizing Game puts in place multiple players that are all pursuing the same goal of maximizing their own profit.
+The Downsizing Game is a strategy game that puts in place multiple players that are all pursuing the same goal of maximizing their own profit.
 Players also have to gain the maximum amount of "votes" in order to win the game.
 
 Players can make transactions between each other in order to trade every sort of resources that is available in the game: 
@@ -54,11 +53,11 @@ Thorough our design and implementation, we will report on the issues we faced an
 overcome them, along with the justifications of such choices. We think this material can be of some interest to computer 
 science students or beginners in providing them with a concrete and detailed example.
 
-The work will indeed be split into 3 main steps:
+The work is split into 3 main steps:
 
 1. Functional requirements: design & implementation
 2. Security requirements: design & implementation 
-3. Comparison against coding guidelines
+3. Comparison against existing coding guidelines (see [_Roadmap_][Roadmap])
 
 The second step of the work will bring security requirements that we found to be necessary to be added by intuition. By 
 simply thinking about the different cases that will be faced in the game and what could be attempted by player to cheat on 
@@ -76,7 +75,7 @@ We will look at the last step as a partial answer to the question "How secure ca
 
 In our design and implementation of the Downsizing Game, we will start from the following assumptions:
 
-1. There is no communication layer between the different part of the game (e.g. : no networking)
+1. The communication channels, e.g. between the players and the judging party, are secure
 2. Everything is happening in the same process on a single CPU machine. That is to say: only one instruction can be executed 
 at a time, there is no parallelism/concurrency.
 3. The technology used to develop the game prevents arbitrary memory from being read. A player program will thus only be 
@@ -97,13 +96,12 @@ The rules of our instance of the Downsizing Game will be stated as follows:
 - The game has a fixed length of 1,000 rounds.
 - 3 players participate in the game.
 - Players can only participate once in the game.
-- Every player is given a million units of the game currency (let us call it dollars) and a hundred of the other resources 
-at the beginning of the game. [FIXME: The other resources start a 0 or 100? What does "buying some trust" actually mean?]
+- Valid / tradable _resources_ are votes [FIXME: Or voting promises?] and the game currency.
+- Every player is given a million units of the game currency (let us call it dollars) and 10 votes to cast.
 - At the end of the game, every player must return the original one million dollars that she was given in the beginning, 
 she can keep the remainder of the money for her.
 - At the end of the game, if players cannot give back the entire amount of money that they were given in the beginning, 
-they have contracted a 
-debt that they will have to reimburse.
+they have contracted a debt that they will have to reimburse.
 - Players can make transactions between each other about every available resource in the game.
 - A judging party enforces the game's rules and manages transactions, ensuring their validity and preventing players 
 from cheating.
@@ -114,7 +112,7 @@ from cheating.
 - Players can not vote for themselves.
 - Every time a player receives a vote, his _score_ increases by 1.
 - At the end of the game, the player(s) with the highest score win(s). The one(s) with the lowest score lose(s).
-- The winning player earns 1 million dollars.
+- The winning player(s) earn(s) 1 million dollars (evenly split, if multiple winners).
 
 <!-- 
 \vspace{1\baselineskip}
@@ -133,7 +131,7 @@ Players play on a turn-by-turn basis. We will call _current player_ the player o
 
 #### Score
 
-The _score_ of a player at a given round $r$ is the number of votes the player received until $r$.
+The _score_ of a player at a given round $r$ is the number of votes that other players cast for her until $r$.
 
 #### Rounds
 
@@ -142,9 +140,9 @@ any of the following actions is executed:
 
 - A transaction is applied
 - Changing the current player
-- Applying the result of a voting round (see after)
+- Applying the result of a voting round (see [_Voting rounds_][votingrounds])
 
-#### Voting rounds
+#### Voting rounds [votingrounds]
 
 A voting round is a round where, **before** any action, all players will be asked to vote as described in the game's rules.
 
@@ -190,10 +188,8 @@ _voting promises transactions_ [ ][votepromtrans]
 A _resource_ is an integer quantity that the judging party allows to trade.
 In our case study, the set of resources will be fixed at the beginning of the game, to:
 
-- Trust
-- Loyalty
 - Cash/money/currency
-- Voting promises
+- Voting promises [FIXME: Decide votes vs. voting promises]
 
 #### Amount
 An _amount_ is a defined, positive integer, quantity of a single resource.
@@ -237,7 +233,7 @@ any of them is not, then the bidirectional transaction is also invalid.
 
 ## Additional Security Requirements
 
-Functional requirements now defined, we are going to define and describe _security requirements_ that are necessary to ensure
+Now that we have defined functional requirements, we are going to define and describe _security requirements_ that are necessary to ensure
 the players do not exploit singularities of the game in order to achieve behaviours that should not be achieved according to
 the rules.
 
@@ -262,7 +258,7 @@ an immediate transaction.
 This is partially guaranteed by the assumptions of no parallelism/concurrency. Although, a player program could still manage
 to steal the CPU (effectively pausing the judging party program's execution) and try to change the state of the game by
 submitting other transaction for instance. A player could use such an attack to submit multiple transactions that will be
-validated on the same balances, but executed on different balances.
+validated on the same balances, but executed on different balances (race-condition / TOCTTOU <!-- \cite{tocttou} -->).
 
 To avoid this, we will make use of synchronization tools to only allow one concurrent execution of the judging party
 program's code of validation and application of an immediate transaction. This can be materialized for instance by the use of
@@ -318,12 +314,12 @@ When asked to perform a new transaction, the judging party will sequentially (in
 
 At every step, if the check fails, the transaction is marked as not valid, and thus, refused.
 
-#### Players mutual agreement
+#### 1. Players mutual agreement
 
 For any transaction validation, the first step that the judge will follow is to ask both involved players whether they
 confirm that they agree with this transaction. Both players have to answer "yes" for this check to succeed.
 
-#### Input validation
+#### 2. Input validation
 The judge will then perform rational checks. These checks are the following:
 
 - Is the amount a **positive integer**? (avoiding resources "generation" with negative values, and rounding errors exploits
@@ -332,7 +328,7 @@ if we were to use real numbers)
 - In case of voting promise, is the amount smaller than the number of votes the player will be able to cast before the end 
 of the game? (voting rounds multiplied by votes per player and per voting round)
 
-#### Balance check
+#### 3. Balance check
 
 The judge will then check the balance of the player _from_ which the transfer is going to happen for the resource that is
 going to be transferred.
@@ -392,9 +388,7 @@ agrees with the currently being validated transaction).
 
 ## Security enforcement
 The roadmap for now is to continue the implementation of the Downsizing Game as described in the current paper and then
-compare this implementation against the following coding guidelines:
-
-- [FIXME I AM MISSING].
+compare this implementation against the following coding guidelines: _"Building Secure Software: How to Avoid Security Problems the Right Way"_, by Viega and McGraw <!-- \cite{coding1} -->
 
 If we have enough time, we will try to compare against other coding guidelines. 
 
@@ -408,7 +402,7 @@ that we minimize the dissatisfaction of the loaners.
 - Allowing players to trade points of their score (a score trade directly adds points to the score, without the "voting" step)
 - Give players an interface to declare the tradable resources they have to the judging party. It would allow to model real life 
 trade where businesses might have exclusive resources that they are alone to possess, compared to everyone trading the same resources.
-- [FIXME: Other suggestions?]
+- Introducting loyalty and trust "resources".
 
 The same way as for the guidelines, if we get additional time we will look into those issues first. If the reviewers have
 suggestions of complexifications that they think would be of higher priority they are welcomed to include those suggestions
@@ -459,11 +453,21 @@ abstract, keeping this for the final version of the paper.]
 # References
 
 <!-- 
-\begin{thebibliography}{1}
+\begin{thebibliography}{3}
 \bibitem{downgame}
 Shinobu Kaitani:
 Downsizing Game, Liar Game
 \url{http://en.wikipedia.org/wiki/Liar_Game#Revival_Round:_Downsizing_Game}
+
+\bibitem{coding1}
+Gary McGraw, John Viega:
+Building Secure Software: How to Avoid Security Problems the Right Way
+2001
+
+\bibitem{tocttou}
+TOCTTOU: "Time of check to time of use"
+\url{http://en.wikipedia.org/wiki/Time-of-check-to-time-of-use}
+
 \end{thebibliography}
 -->
 <!-- \end{document} -->
