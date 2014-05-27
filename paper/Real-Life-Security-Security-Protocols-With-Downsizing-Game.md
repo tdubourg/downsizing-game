@@ -6,6 +6,7 @@ Base Header Level:  2
 documentclass:      llncs
 latex input:        mmd-article-begin-doc
 
+<!--% Note: For some reason it seems that when adding a new reference the file needs to be compiled twice for ref to appear  -->
 <!--
 \nonstopmode
 \begin{abstract}
@@ -136,7 +137,7 @@ The _score_ of a player is increased by 1 for every vote that is casted from ano
 
 Players can also trade their score as a _resource_. The initial score is zero ([see rules][gamerules]).
 
-#### Rounds
+#### Rounds [roundsdef]
 
 A _round_ is an atomic unit of time in the game. A round can thus not be divided into subrounds. A round passes every time 
 any of the following actions is executed:
@@ -272,6 +273,8 @@ name, is indeed the player she is saying she is.
 
 # Implementation 
 
+In this section, we will first parts of the implementation related to enforcing the _security requirements_ and then present the reste our the implementation.
+
 ## Security requirements implementation
 
 ### Judging party exclusiveness aka turn-by-turn enforcement
@@ -338,6 +341,7 @@ The judge will then perform rational checks. These checks are the following:
 - Is the amount a **positive integer**? (avoiding resources "generation" with negative values, and rounding errors exploits
 if we were to use real numbers)
 - Is the amount smaller than the global amount of resources of this type in the entire game?
+- If it is a delayed transaction, is the _deadline_ a valid round? ($current\ round < deadline < last\ round$ )
 - In case of voting promise, is the amount smaller than the number of votes the player will be able to cast before the end 
 of the game? (voting rounds multiplied by votes per player and per voting round)
 
@@ -356,6 +360,14 @@ payment deadline is set.
 That means that a scheduled, or delayed transaction, is not safe by itself, as the judging party cannot guarantee that the
 payment will be made. Mitigation/punishment in case of lack of payment will be described later.
 
+#### Additional virtual round for transactions validation
+
+It should be noted that, as delayed transactions are validated at the beginning of rounds, a _virtual_ round, that is to say 
+a non playable round, will be added at the end of the game for the purpose of validating the delayed transaction whose deadline
+was the last round (excluding the additional virtual round).
+
+As the game has 1,000 [rounds][gamerules], this round could be considered as the 1,001^st round.
+
 ### Casting votes aka _voting transactions_ [voting]
 
 Casting votes is done (by the players) by returning, on the call of the judging party, a special transaction. We will call 
@@ -369,7 +381,23 @@ If the vote casting has to been linked to a delayed transaction in progress, the
 transaction will be applied: A "subtransaction" of type _Voting Subtransaction_ will be used. See [][schedtranscompletion]
 for more details on _subtransactions_.
 
-### Voting rounds [votingrounds]
+<!-- 
+\vspace{1\baselineskip}
+-->
+
+Note that we also had the choice to make "votes" resource a "voting promises" resource and directly enforcing transferred amounts of
+this resource by the judging party. We would do so by forcing the _payer_ player to vote less and casting automatically the _owed_
+votes at the next voting round or at some voting round specified in the transaction. However, we finally decided to transform every
+vote casting into a transaction so that not only we keep of every single action in the game as a transaction, allowing for logging, 
+replay and potential error-recovery, but that also allows more flexible voting transactions to be created. Indeed, with our 
+implementation, a player can tell another player "OK, I will for sure vote for you $X$ times before the round $r$, but I get to 
+decide when". Such transactions, in a real world environment, are very important because it allows to add some preassure to some 
+other  player for instance, and not to reveal one's true voting agreement too early, while still having strong voting agreements. We 
+believe suchs advantages are better than the sole advantage of having the judging party to it instead of the player, that would 
+prevent the player from cheating. It is to be also noted that this model allows more easily the implementation of _cancellation 
+transactions_ as defined in the [future work][futurework].
+
+### Voting rounds [votingrounds_security]
 
 On voting rounds, the judging party will ask players to vote.
 
@@ -380,13 +408,13 @@ The judging party, for every player's vote, will check that it respects the rule
 promises that have been registered via previous transaction. To summarise, a voting round go through the following steps, in
 order:
 
-1. Check for scheduled transaction completeness, as for any round
-2. Ask every player, one by one, to vote
-3. Validate vote according to the rules and to the history of transactions
-4. Either accept the vote, of qualify voting player as a cheater if the vote was not valid
-5. Ask next player and go 3. and 4. again until all players have voted
+1. Check for scheduled transaction completeness, as for any round.
+2. Ask every player, one by one, to cast one vote.
+3. Validate the vote according to the rules.
+4. Either accept the vote, of qualify voting player as a cheater if the vote was not valid.
+5. Do 3. and 4. again for the next player, until we went through all of them.
 6. Publicly disclose the new number of votes that every player received and their new score.
-7. Allow the current player to play
+7. Go to next round (as per [][roundsdef])
 
 ### Cheaters death and resources owed
 
@@ -397,7 +425,9 @@ player account.
 If she owes resources to _multiple_ players. The judging party will distribute the money proportionately, rounded to the closest
 integer. The exact formula is:
 
-$$part\ of\ the\ remaining\ balance\ you\ get = round(\cfrac{total\ amount\ cheater\ owed\ to\ you}{total\ debt\ of\ the\ cheater})$$
+$$part\ of\ the\ remaining\ balance\ you\ get = round\left(\cfrac{total\ amount\ cheater\ owed\ to\ you}{total\ debt\ of\ the\ cheater}\right)$$
+
+Where $round$ is the function that rounds a real number to the closest integer.
 
 ## Miscellaneous security measures
 
@@ -418,15 +448,38 @@ the object we are going to use anymore. We can then validate and apply the trans
 process is used when passing transactions as a parameter at the step of "player agreement" check (where we check the player
 agrees with the currently being validated transaction).
 
+## Implementation of the game / game execution flow
+
+## Game initialization
+[FIXME insert diagram here]
+
+## Round
+[FIXME insert diagram here]
+
+The pseudo-code of a non-voting round is located in the [appendix][codegameinit]
+
+### Non-voting round
+[FIXME insert diagram here]
+
+The pseudo-code of a non-voting round is located in the [appendix][coderound]
+
+### Voting round
+[FIXME insert diagram here]
+
+
 # Roadmap
 
-## Security enforcement
 The roadmap for now is to continue the implementation of the Downsizing Game as described in the current paper and then
 compare this implementation against the following coding guidelines: _"Building Secure Software: How to Avoid Security Problems the Right Way"_, by Viega and McGraw <!-- \cite{coding1} -->
 
-If we have enough time, we will try to compare against other coding guidelines. 
+If we have enough time, we will also try to compare against other coding guidelines. 
 
-## Game complexification
+<!-- 
+\vspace{1\baselineskip}
+ -->
+**Reviewers suggestions** are also welcomed. If reviewers have specific coding guidelines in mind that would especially well apply to our current implementation (in Python), they can submit suggestions together with their review.
+
+# Future work: Game complexification
 
 The following parts and/or rules of the game and/or previous decisions could be changed in order to make the game a little 
 bit more complex but a little bit more realistic in some way:
@@ -437,20 +490,21 @@ bit more complex but a little bit more realistic in some way:
 trade where businesses might have exclusive resources that they are alone to possess, compared to everyone trading the same resources.
 - Introducting loyalty and trust "resources".
 
-The same way as for the guidelines, if we get additional time we will look into those issues first. If the reviewers have
-suggestions of complexifications that they think would be of higher priority they are welcomed to include those suggestions
-in the review comments.
+The same way as for the guidelines, if we get additional time we will look into those issues first. 
+
 <!-- 
 \vspace{1\baselineskip}
  -->
-**Reviewers suggestions are welcomed.** If reviewers have specific coding guidelines that would best fit this case study
- in mind, they can suggest it along with their review.
+
+**If the reviewers have suggestions** of complexifications that they think would be of higher priority they are welcomed to include
+those suggestions in the review comments.
 
 # Appendix
 [FIXME: This section, alone, does not really make any sense. I think we should either make a small presentation of the
 implementation / game flow somewhere or completely remove anything related to game flow / implementation fro, th extended
 abstract, keeping this for the final version of the paper.]
-### Game initialization
+
+### Game initialization [codegameinit]
     Game::init
         clock = initialize_clock()
         judge = initialize_judge()
@@ -464,7 +518,7 @@ abstract, keeping this for the final version of the paper.]
         judge.setPlayers(players)
 
 
-### Pseudo-code of a round:
+### Pseudo-code of a round [coderound]
     Game::play
         while judge.play_round():
             pass
@@ -486,7 +540,7 @@ abstract, keeping this for the final version of the paper.]
 # References
 
 <!-- 
-\begin{thebibliography}{3}
+\begin{thebibliography}{1} % Note: This is non-sense but I have to keep this {1} for it to work, any other parameter will screw something up
 \bibitem{downgame}
 Shinobu Kaitani:
 Downsizing Game, Liar Game
