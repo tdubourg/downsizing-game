@@ -508,6 +508,10 @@ asking the players to actually play.
 
 [Global Flowchart]: globalflowchart.png
 
+
+<!-- 
+\vspace{5\baselineskip}
+ -->
 ## Rounds
 
 ### Non-voting round
