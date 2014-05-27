@@ -31,17 +31,42 @@ justifications  for such choices.
 # Introduction
 
 ## The Downsizing Game 
-The Downsizing Game is a strategy game that puts in place multiple players that are all pursuing the same goal of maximizing their own profit.
-Players also have to gain the maximum amount of "votes" in order to win the game. [FIXME: ADD A LITTLE BIT DETAILS TO THE DESCRIPTION OF THE GAME]
 
-Players can make transactions between each other in order to trade every sort of resources that is available in the game: 
-Money, trust, loyalty, and votes.
+The Downsizing Game, as originally described by S. Kaitani <!--\cite{downgame} -->, puts multiple players into an
+environment where they are given a million of the local currency and have to return it at the end of the game, but they
+can keep the remainder if they managed to make some profit. There are voting rounds where they vote for the other
+players. The player getting the maximum amount of votes wins a one million prize while the one with the least amount of
+votes if removed from the group (the group is _downsized_, giving the name to the game).
 
-Every 100 rounds, a _voting round_ takes places. On voting rounds, _all_ players should vote for _another_ player. We will 
-describe the game in details in [][gamerules]
+Players can maximize their profit either by trading resources with other players, or win the one million prize.
 
-Although it may seem like a simple game, it poses interesting challenges in terms of security because players will almost certainly try
-to cheat in order to win the game and maximize their profit.
+Players can make transactions between each other in order to trade every sort of resources that is available in the
+game:  Money, trust, loyalty, and votes.
+
+We will describe the exact instance of the game that we will use (with variations in the rules) in details in
+[][gamerules]
+
+Although it may seem like a simple game, it poses interesting challenges in terms of security because players will
+almost certainly try to cheat in order to win the game and maximize their profit.
+
+### Example
+We will take a short example on a very small instance of the Downsizing Game to show the game's dynamics.
+
+Let us imagine we have 3 players, 6 rounds, 3 voting rounds (every 2 rounds) and every player can vote for only one
+other player on each voting round.
+
+The following actions are one of the possible runs of the game (currency is \$ here):
+
+1. Player 1 is the current player. It exchanges 1 vote against \$100,000 with Player 2
+2. Voting round. Player 2 votes for player 1 to respect the transaction. Player 3 votes for Player 2, Player 1 votes for Player 3. Scores are now 1 for everyone.
+3. Player 2 is the current player and buys 1 vote to Player 1 and 1 vote to Player 3 for \$25,000 each.
+4. Voting round. Player 2 receives 2 votes from players 1 and 3. Player 3 receives a vote from Player 2. Scores are 
+now respectively 1, 3 and 2 for players 1, 2 and 3.
+5. Player 3 tries to buy votes from the two other players for \$500,000 each, Player 1 accepts but Player 2 refuses.
+6. Voting round. Player 2 votes for Player 3 to respect the transaction. Player 3 votes for player 1. Player 1 finally still votes for Player 3. Scores are now respectively respectively 2, 3 and 4 for players 1, 2 and 3.
+
+The Player 3 is the only winner and gets the one million prize.
+All players then have to give back the orignal one million. Player 1 cannot and has a debt of $75,000. Player 2 gives  it back and keeps the \$450,000 remaining. Player 3 has a debt of \$475,000 but wins the one million prize and thus make a profit of \$525,000 in the end.
 
 ## Objective
 
@@ -233,9 +258,15 @@ any of them is not, then the bidirectional transaction is also invalid.
 
 ## Security Requirements
 
-Now that we have defined functional requirements, we are going to define and describe the addition _security requirements_ that are
-necessary to ensure the players do not exploit singularities of the game in order to achieve behaviours that should not be achieved
-according to the rules.
+Now that we have defined functional requirements, we are going to define and describe the addition _security requirements_ 
+that are necessary to ensure the players do not exploit singularities of the game in order to achieve
+behaviours that should not be achieved according to the rules.
+
+### Resources accounting protection
+
+We cannot let the players update by themselves the amount of resources as they would obviously cheat and generate for
+instance new cash flow so that they keep buying and making profits. We should have something managing the resources
+accounting.
 
 ### Judging party exclusiveness aka turn-by-turn enforcement
 
@@ -280,6 +311,19 @@ name, is indeed the player she is saying she is.
 In this section, we will first parts of the implementation related to enforcing the _security requirements_ and then present the reste our the implementation.
 
 ## Security requirements implementation
+
+### Resources accounting
+
+The accounting of the resources of all players will entirely be hidden from the players and be done exclusively by the judging party.
+
+Players will be given their initial amount of resources and it will be left up to them to their balance's updates if they need to, the judging party's interface will not include anything to read the resources.
+
+The judging party, before the instanciation of the players, will instanciate every player's resources and as every
+transaction has to go through the judging party, it will be the one responsible for updating the resources balances.
+
+In this manner, we do not need any access control mechanism for the players, they do not have any knowledge about the
+real account and as a consequence, no access to it (as they cannot access objects without reference to them, as per
+[][Assumptions])
 
 ### Judging party exclusiveness aka turn-by-turn enforcement
 
@@ -454,22 +498,39 @@ agrees with the currently being validated transaction).
 
 ## Implementation of the game / game execution flow
 
-## Game initialization
-[FIXME insert diagram here]
+## Global overview of the game's organization
 
-## Round
-[FIXME insert diagram here]
 
-The pseudo-code of a non-voting round is located in the [appendix][codegameinit]
+Below is presented a gloval overview of the game. The game first initializes (cf. [_Game Initialization_][codegameinit] for more details). The game then calls the judging party and the latter is responsible for
+asking the players to actually play.
+
+![Global Flowchart][]
+
+[Global Flowchart]: globalflowchart.png
+
+## Rounds
 
 ### Non-voting round
-[FIXME insert diagram here]
-
+Below is the sequence diagram of a round. 
 The pseudo-code of a non-voting round is located in the [appendix][coderound]
 
-### Voting round
-[FIXME insert diagram here]
+![Non-voting Round Sequence Diagram][]
 
+[Non-voting Round Sequence Diagram]: round_seq_diagram.png
+
+<!-- 
+% I just want to say lol about the fact I need that so that my titles dont end up in the middle of nonsensewhere
+\vspace{4\baselineskip}
+-->
+
+### Voting round
+
+The pseudo-code of a non-voting round is located in the [appendix][codevoting]
+
+[FIXME HEY HEY STILL ONE TO DO!]
+![Non-voting Round Sequence Diagram][]
+
+[Non-voting Round Sequence Diagram]: round_seq_diagram.png
 
 # Roadmap
 
@@ -504,9 +565,6 @@ The same way as for the guidelines, if we get additional time we will look into 
 those suggestions in the review comments.
 
 # Appendix
-[FIXME: This section, alone, does not really make any sense. I think we should either make a small presentation of the
-implementation / game flow somewhere or completely remove anything related to game flow / implementation fro, th extended
-abstract, keeping this for the final version of the paper.]
 
 ### Game initialization [codegameinit]
     Game::init
@@ -541,14 +599,11 @@ abstract, keeping this for the final version of the paper.]
                 return False
             return True
 
-# References
-
 <!-- 
 \begin{thebibliography}{1} % Note: This is non-sense but I have to keep this {1} for it to work, any other parameter will screw something up
 \bibitem{downgame}
 Shinobu Kaitani:
 Downsizing Game, Liar Game
-\url{http://en.wikipedia.org/wiki/Liar_Game#Revival_Round:_Downsizing_Game}
 
 \bibitem{coding1}
 Gary McGraw, John Viega:
@@ -556,9 +611,11 @@ Building Secure Software: How to Avoid Security Problems the Right Way
 2001
 
 \bibitem{tocttou}
-TOCTTOU: "Time of check to time of use"
-\url{http://en.wikipedia.org/wiki/Time-of-check-to-time-of-use}
-
+"Time of check to time of use"
+"Checking for Race Conditions in File Accesses"
+Computing Systems, Vol. 9, No. 2, pp. 131–152.
+Matt Bishop, Michael Dilger
+1996
 \end{thebibliography}
 -->
 <!-- \end{document} -->
