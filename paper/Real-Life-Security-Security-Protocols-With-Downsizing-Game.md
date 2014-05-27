@@ -24,7 +24,7 @@ up such a system and environment, we will report on the issues we face, the solu
 justifications  for such choices.
 
 <!--
-\keywords{enforcement, security, security protocols}
+\keywords{Keywords: enforcement, security, security protocols}
 \end{abstract}
 -->
 
@@ -32,7 +32,7 @@ justifications  for such choices.
 
 ## The Downsizing Game 
 The Downsizing Game is a strategy game that puts in place multiple players that are all pursuing the same goal of maximizing their own profit.
-Players also have to gain the maximum amount of "votes" in order to win the game.
+Players also have to gain the maximum amount of "votes" in order to win the game. [FIXME: ADD A LITTLE BIT DETAILS TO THE DESCRIPTION OF THE GAME]
 
 Players can make transactions between each other in order to trade every sort of resources that is available in the game: 
 Money, trust, loyalty, and votes.
@@ -40,8 +40,8 @@ Money, trust, loyalty, and votes.
 Every 100 rounds, a _voting round_ takes places. On voting rounds, _all_ players should vote for _another_ player. We will 
 describe the game in details in [][gamerules]
 
-Although it may seem like a simple game, players behaviour can largely vary between each other, which makes ensuring that
-everything goes as it should not completely trivial.
+Although it may seem like a simple game, it poses interesting challenges in terms of security because players will almost certainly try
+to cheat in order to win the game and maximize their profit.
 
 ## Objective
 
@@ -131,12 +131,6 @@ of the game, as she will keep the remainder of the money after giving back the o
 #### Current player
 Players play on a turn-by-turn basis. We will call _current player_ the player of which it is currently the turn.
 
-#### Score
-
-The _score_ of a player is increased by 1 for every vote that is casted from another player for this player.
-
-Players can also trade their score as a _resource_. The initial score is zero ([see rules][gamerules]).
-
 #### Rounds [roundsdef]
 
 A _round_ is an atomic unit of time in the game. A round can thus not be divided into subrounds. A round passes every time 
@@ -152,6 +146,25 @@ A voting round is a round where, **before** any action, all players will be aske
 
 According to the definition of the rounds, no other actions can be taken during a voting round, as a round passes when
 applying the result of a voting round.
+
+#### Vote
+Vote is a special resource that can only be transferred during a voting round.
+
+#### Resources
+
+A _resource_ is an integer quantity that the judging party allows to trade.
+In our case study, the set of resources will be fixed at the beginning of the game, to:
+
+- Cash/money/currency
+- Votes
+- Score
+
+#### Score
+
+The _score_ of a player is increased by 1 for every vote that is casted from another player for this player.
+
+Players can also trade their score as a _resource_. The initial score is zero ([see rules][gamerules]).
+
 
 #### Cheater
 
@@ -179,15 +192,6 @@ a special unidirectional transaction (it does not inherit from it).
 
 Every resource except _voting promises_ can be traded using a transaction. Voting promises have to be traded using 
 _voting promises transactions_ [ ][votepromtrans]
-
-#### Resources
-
-A _resource_ is an integer quantity that the judging party allows to trade.
-In our case study, the set of resources will be fixed at the beginning of the game, to:
-
-- Cash/money/currency
-- Votes
-- Score
 
 #### Amount
 An _amount_ is a defined, positive integer, quantity of a single resource.
