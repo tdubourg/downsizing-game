@@ -96,11 +96,12 @@ The rules of our instance of the Downsizing Game will be stated as follows:
 - The game has a fixed length of 1,000 rounds.
 - 3 players participate in the game.
 - Players can only participate once in the game.
-- Valid / tradable _resources_ are votes [FIXME: Or voting promises?] and the game currency.
+- Valid / tradable _resources_ are votes, score and the game currency.
 - Every player is given a million units of the game currency (let us call it dollars) and 10 votes to cast.
+- Every player starts with a score of zero.
 - At the end of the game, every player must return the original one million dollars that she was given in the beginning, 
 she can keep the remainder of the money for her.
-- At the end of the game, if players cannot give back the entire amount of money that they were given in the beginning, 
+- At the end of the game, if players cannot give back the entire amount of mon,ey that they were given in the beginning, 
 they have contracted a debt that they will have to reimburse.
 - Players can make transactions between each other about every available resource in the game.
 - A judging party enforces the game's rules and manages transactions, ensuring their validity and preventing players 
@@ -131,7 +132,9 @@ Players play on a turn-by-turn basis. We will call _current player_ the player o
 
 #### Score
 
-The _score_ of a player at a given round $r$ is the number of votes that other players cast for her until $r$.
+The _score_ of a player is increased by 1 for every vote that is casted from another player for this player.
+
+Players can also trade their score as a _resource_. The initial score is zero ([see rules][gamerules]).
 
 #### Rounds
 
@@ -146,7 +149,7 @@ any of the following actions is executed:
 
 A voting round is a round where, **before** any action, all players will be asked to vote as described in the game's rules.
 
-According to the definition of the rounds, no other action can be taken at during a voting round, as a round passes when
+According to the definition of the rounds, no other actions can be taken during a voting round, as a round passes when
 applying the result of a voting round.
 
 #### Cheater
@@ -157,15 +160,8 @@ applying the result of a voting round.
 % necessary for the game itself, it does not, imho, represent a specific security check 
 -->
 
-A cheater is a player that breaks one or several game's rules. Cheaters are immediately killed and thus removed from the game. If, at the
-moment they are killed they owe some resources to another player, the remaining resources of the killed player will be 
-transferred to the one they were owed to, up the owed amount,  and up to the remaining balance of this resource on this 
-killed player account.
-
-If they owe resources to multiple players. The judging party will distribute the money proportionately, rounded to the 
-closest integer. The exact formula is:
-
-$$part\ of\ the\ remaining\ balance\ you\ get = round(\cfrac{total\ amount\ cheater\ owed\ to\ you}{total\ debt\ of\ the\ cheater})$$
+A cheater is a player that breaks one or several game's rules. Cheaters must be immediately killed and thus removed 
+from the game.
 
 #### Transactions
 
@@ -189,7 +185,8 @@ A _resource_ is an integer quantity that the judging party allows to trade.
 In our case study, the set of resources will be fixed at the beginning of the game, to:
 
 - Cash/money/currency
-- Voting promises [FIXME: Decide votes vs. voting promises]
+- Votes
+- Score
 
 #### Amount
 An _amount_ is a defined, positive integer, quantity of a single resource.
@@ -216,32 +213,32 @@ composed of, is a delayed transaction.
 #### Voting promises transactions [votepromtrans]
 
 Voting promises are a type of delayed transactions. Voting promises are promises that a given player will cast a given number
-of votes to the _recipient_ of the transaction before a given absolute game's time unit.
-
+of votes to the _recipient_ of the transaction before a given absolute game's time unit (because it's a delayed transaction).
 
 #### Valid transaction 
 
 A _transaction_ is said to be _valid_ if and only if: 
 
 - Transaction does not break a game rule. 
-- Transaction is able to be completed to the extent of the judging party’s knowledge. (e.g. : Enough money on the account, 
+- Transaction is able to be completed to the extent of the judging party’s knowledge. (e.g.: Enough money on the account, 
 in case of an immediate money transfer).
 
 A bidirectional transaction will be considered valid if both unidirectional transactions it is composed of are valid. If
 any of them is not, then the bidirectional transaction is also invalid.
 
+## Security Requirements
 
-## Additional Security Requirements
-
-Now that we have defined functional requirements, we are going to define and describe _security requirements_ that are necessary to ensure
-the players do not exploit singularities of the game in order to achieve behaviours that should not be achieved according to
-the rules.
+Now that we have defined functional requirements, we are going to define and describe the addition _security requirements_ that are
+necessary to ensure the players do not exploit singularities of the game in order to achieve behaviours that should not be achieved
+according to the rules.
 
 ### Judging party exclusiveness aka turn-by-turn enforcement
 
-The _current player_ is the only one that can make calls to the judging party's interface.
+The _current player_ must be the only one that can make calls to the judging party's interface.
+
 This is needed in order to prevent other players from trying to steal the CPU and make transactions on the transaction quota
-of another player instead of their own quota.
+of another player instead of their own quota. We should thus implement a way to protect the judging party from executing
+actions calls by other players than the _current player_.
 
 <!-- 
 % Note: Better solution?  If we want to divide it equally we need to do it with some sort of incremental algorithm: first 
@@ -252,22 +249,44 @@ of another player instead of their own quota.
 
 ### Immediate transactions: guaranteeing "immediateness" (atomicity) [immatom]
 
-There should be no other interaction, no change to the state of the game should happen between validation and application of
-an immediate transaction.
+There should be no other interactions, no changes to the state of the game should happen between validation and application of an
+immediate transaction.
 
 This is partially guaranteed by the assumptions of no parallelism/concurrency. Although, a player program could still manage
 to steal the CPU (effectively pausing the judging party program's execution) and try to change the state of the game by
-submitting other transaction for instance. A player could use such an attack to submit multiple transactions that will be
-validated on the same balances, but executed on different balances (race-condition / TOCTTOU <!-- \cite{tocttou} -->).
+submitting other transactions for instance. A player could use such an attack to submit multiple transactions that will be
+validated on the same balances, but executed on different balances (race-condition/"TOCTTOU" <!-- \cite{tocttou} -->).
 
-To avoid this, we will make use of synchronization tools to only allow one concurrent execution of the judging party
-program's code of validation and application of an immediate transaction. This can be materialized for instance by the use of
-operating system's _mutex_ tools, but any other synchronization tool providing equal guarantees can be used too.
-
-### Delayed/scheduled transactions completion
+### Delayed/scheduled transactions completion [schedtranscompletion]
 
 Delayed transactions are validated without the transfers of resources actually taking place and have a deadline for this
-transfer to happen. It has to be checked that the transfer was indeed done strictly before the deadline.
+transfer to happen. There should a mechanism in place to that the transfer was indeed done strictly before the deadline.
+
+### Players authentication [playerauth]
+
+When creating a transaction, a player could provide false information about the participants in this transaction and thus
+attempt to impersonate other players and make transactions on their behalf.
+
+As a consequence, we need a mechanism to authenticate the players and be sure that the player who submitted a request in her
+name, is indeed the player she is saying she is.
+
+# Implementation 
+
+## Security requirements implementation
+
+### Judging party exclusiveness aka turn-by-turn enforcement
+
+In order to allow only the current player to access the judging party and make call to it, we will simply keep track of the current player in the judging party and every judging party's interface function will check whether the calling player is the current player or not and immediately abort if not. Player [authentication][playerauth] guarantees that another player cannot submit 
+transactions by using the _current player_ as the origin of the transaction.
+
+### Immediate transactions: guaranteeing "immediateness" (atomicity) [immatomimpl]
+As explained in [][immatom], even with the stated [assumptions][Assumptions], there is still room for a race-condition.
+
+To avoid this, we will make use of synchronization tools to only allow one concurrent execution of the judging
+party program's code of validation and application of an immediate transaction. This can be materialized for instance by the use of
+operating system's _mutex_ tools, but any other synchronization tool providing equal guarantees can be used too.
+
+### Delayed/scheduled transactions completion [schedtranscompletionimpl]
 
 When the game's clock ticks to this absolute time unit (the deadline), it will tell the judge that there is some delayed transactions that
 should be checked for having been completed. The judging party will then check if the transactions have been completed by the
@@ -293,13 +312,7 @@ subtransactions that were made since the round of the delayed transaction betwee
 up. The sum has to be **exactly** what was initially agreed in the delayed transaction. If and only if it is the case, 
 then the transaction can be marked as completed.
 
-### Players authentication
-
-When creating a transaction, a player could provide false information about the participants in this transaction and thus
-attempt to impersonate other players and make transactions on their behalf.
-
-As a consequence, we need a mechanism to authenticate the players and be sure that the player who submitted a request in her
-name, is indeed the player she is saying she is.
+### Players authentication [playerauthimpl]
 
 To authenticate the player, we will go for the simple use of a password. At the beginning of the game, every player will be
 given a unique password that she will have to pass along with every call she does to the judging party's interface in order
@@ -343,7 +356,20 @@ payment deadline is set.
 That means that a scheduled, or delayed transaction, is not safe by itself, as the judging party cannot guarantee that the
 payment will be made. Mitigation/punishment in case of lack of payment will be described later.
 
-### Voting rounds
+### Casting votes aka _voting transactions_ [voting]
+
+Casting votes is done (by the players) by returning, on the call of the judging party, a special transaction. We will call 
+this type of special transaction _Voting Transaction_.
+
+A voting transaction is an _immediate transaction_ where the resource type is always _votes_. The _payer_ is the player
+casting the vote and the _payee_ is the player whose score will be increased by this vote, ie. the player "receiving" the
+vote.
+
+If the vote casting has to been linked to a delayed transaction in progress, the same process as for any other delayed
+transaction will be applied: A "subtransaction" of type _Voting Subtransaction_ will be used. See [][schedtranscompletion]
+for more details on _subtransactions_.
+
+### Voting rounds [votingrounds]
 
 On voting rounds, the judging party will ask players to vote.
 
@@ -362,8 +388,16 @@ order:
 6. Publicly disclose the new number of votes that every player received and their new score.
 7. Allow the current player to play
 
-[FIXME: Voting promises model: next round / versus a transaction generated by every vote]
+### Cheaters death and resources owed
 
+If, at the moment a cheater is kill, she owes some resources to another player, the remaining resources of the killed player will be
+transferred to the one they were owed to, up the owed amount, and up to the remaining balance of this resource on this killed
+player account.
+
+If she owes resources to _multiple_ players. The judging party will distribute the money proportionately, rounded to the closest
+integer. The exact formula is:
+
+$$part\ of\ the\ remaining\ balance\ you\ get = round(\cfrac{total\ amount\ cheater\ owed\ to\ you}{total\ debt\ of\ the\ cheater})$$
 
 ## Miscellaneous security measures
 
@@ -397,9 +431,8 @@ If we have enough time, we will try to compare against other coding guidelines.
 The following parts and/or rules of the game and/or previous decisions could be changed in order to make the game a little 
 bit more complex but a little bit more realistic in some way:
 
-- When a cheater is killed, distributions of the cheater's remaining resources so that we try to minimize the amount of debts remaining open or so
-that we minimize the dissatisfaction of the loaners.
-- Allowing players to trade points of their score (a score trade directly adds points to the score, without the "voting" step)
+- When a cheater is killed, distributions of the cheater's remaining resources so that we try to minimize the amount of debts remaining open or so that we minimize the dissatisfaction of the loaners.
+- Allowing _cancellation transactions_ (together with a _refund_) for _delayed_ transactions. E.g.: a player finally does not want to give that many votes to another player, so she asks for cancellation and proposes a given amount as a refund for the cancelling of the "contract". As any other transaction, both players would need to agree. The judging party would then simply _discard_ the remaining open delayed transaction upon applying the _cancellation transaction_.
 - Give players an interface to declare the tradable resources they have to the judging party. It would allow to model real life 
 trade where businesses might have exclusive resources that they are alone to possess, compared to everyone trading the same resources.
 - Introducting loyalty and trust "resources".
