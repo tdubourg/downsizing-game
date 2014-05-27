@@ -242,8 +242,9 @@ composed of, is a delayed transaction.
 
 #### Voting promises transactions [votepromtrans]
 
-Voting promises are a type of delayed transactions. Voting promises are promises that a given player will cast a given number
-of votes to the _recipient_ of the transaction before a given absolute game's time unit (because it's a delayed transaction).
+Voting promises are a type of delayed transactions. Voting promises are promises that a given player will cast a given
+number of votes to the _recipient_ of the transaction before a given absolute game's time unit (because it's a delayed
+transaction).
 
 #### Valid transaction 
 
@@ -382,6 +383,9 @@ At every step, if the check fails, the transaction is marked as not valid, and t
 
 For any transaction validation, the first step that the judge will follow is to ask both involved players whether they
 confirm that they agree with this transaction. Both players have to answer "yes" for this check to succeed.
+
+Note that if the transaction if a _voting transaction_ (vote casting), only the agreement of the _payer_ is being asked.
+The _payee_ is not asked because you cannot _refuse_ a vote.
 
 #### 2. Input validation
 The judge will then perform rational checks. These checks are the following:
@@ -529,12 +533,15 @@ The pseudo-code of a non-voting round is located in the [appendix][coderound]
 
 ### Voting round
 
-The pseudo-code of a non-voting round is located in the [appendix][codevoting]
+The pseudo-code of a non-voting round will be added in the final version of the paper.
 
-[FIXME HEY HEY STILL ONE TO DO!]
-![Non-voting Round Sequence Diagram][]
+![Voting Round Sequence Diagram][]
 
-[Non-voting Round Sequence Diagram]: round_seq_diagram.png
+[Voting Round Sequence Diagram]: voting_round_seq_diagram.png
+
+<!-- 
+\vspace{5\baselineskip}
+-->
 
 # Roadmap
 
