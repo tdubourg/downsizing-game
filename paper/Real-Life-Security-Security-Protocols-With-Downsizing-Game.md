@@ -50,23 +50,25 @@ Although it may seem like a simple game, it poses interesting challenges in term
 almost certainly try to cheat in order to win the game and maximize their profit.
 
 ### Example
-We will take a short example on a very small instance of the Downsizing Game to show the game's dynamics.
+We will take a short example on a very small instance of the Downsizing Game to show the game's dynamics. 
+
+_Note that our instance used for the case study and described later will differ in some details to this example (voting rounds, especially), but we keep the example simplistic for now._
 
 Let us imagine we have 3 players, 6 rounds, 3 voting rounds (every 2 rounds) and every player can vote for only one
 other player on each voting round.
 
 The following actions are one of the possible runs of the game (currency is \$ here):
 
-1. Player 1 is the current player. It exchanges 1 vote against \$100,000 with Player 2
-2. Voting round. Player 2 votes for player 1 to respect the transaction. Player 3 votes for Player 2, Player 1 votes for Player 3. Scores are now 1 for everyone.
-3. Player 2 is the current player and buys 1 vote to Player 1 and 1 vote to Player 3 for \$25,000 each.
-4. Voting round. Player 2 receives 2 votes from players 1 and 3. Player 3 receives a vote from Player 2. Scores are 
+1. Player1 is the current player. Player1 sells 1 vote to Player2 for \$100,000.
+2. Voting round. Player2 votes for player 1 to respect the transaction. Player3 votes for Player2, Player1 votes for Player3. Scores are now 1 for everyone.
+3. Player2 is the current player and buys Player1 1 vote and Player3 1 vote for \$25,000 each.
+4. Voting round. Player2 receives 2 votes from players 1 and 3. Player3 receives a vote from Player2. Scores are 
 now respectively 1, 3 and 2 for players 1, 2 and 3.
-5. Player 3 tries to buy votes from the two other players for \$500,000 each, Player 1 accepts but Player 2 refuses.
-6. Voting round. Player 2 votes for Player 3 to respect the transaction. Player 3 votes for player 1. Player 1 finally still votes for Player 3. Scores are now respectively respectively 2, 3 and 4 for players 1, 2 and 3.
+5. Player3 tries to buy votes from the two other players for \$500,000 each, Player1 accepts but Player2 refuses.
+6. Voting round. Player2 votes for Player3 to respect the transaction. Player3 votes for Player1. Player1 finally still votes for Player3. Scores are now respectively respectively 2, 3 and 4 for players 1, 2 and 3.
 
-The Player 3 is the only winner and gets the one million prize.
-All players then have to give back the orignal one million. Player 1 cannot and has a debt of $75,000. Player 2 gives  it back and keeps the \$450,000 remaining. Player 3 has a debt of \$475,000 but wins the one million prize and thus make a profit of \$525,000 in the end.
+The Player3 is the only winner and gets the one million prize.
+All players then have to give back the orignal one million. Player1 cannot and has a debt of $75,000. Player2 gives  it back and keeps the \$450,000 remaining. Player3 has a debt of \$475,000 but wins the one million prize and thus make a profit of \$525,000 in the end.
 
 ## Objective
 
@@ -107,7 +109,7 @@ at a time, there is no parallelism/concurrency.
 3. The technology used to develop the game prevents arbitrary memory from being read. A player program will thus only be 
 allowed to access data from objects it has been given an explicit pointer and/or reference to.
 
-The reason for working under those assumptions is that the focus here on the security of the interaction protocol between
+The reason for working under those assumptions is that we focus here on the security of the interaction protocol between
 players and the implementation of the judging party. A communication layer would bring with  it all sorts of communication-
 related security concerns that are not of interest here. The same reason goes for parallelism  and/or concurrency.
 
@@ -127,12 +129,12 @@ The rules of our instance of the Downsizing Game will be stated as follows:
 - Every player starts with a score of zero.
 - At the end of the game, every player must return the original one million dollars that she was given in the beginning, 
 she can keep the remainder of the money for her.
-- At the end of the game, if players cannot give back the entire amount of mon,ey that they were given in the beginning, 
+- At the end of the game, if players cannot give back the entire amount of money that they were given in the beginning, 
 they have contracted a debt that they will have to reimburse.
-- Players can make transactions between each other about every available resource in the game.
+- Players can make transactions between each other using every available resource in the game.
 - A judging party enforces the game's rules and manages transactions, ensuring their validity and preventing players 
 from cheating.
-- There are 10 voting rounds: rounds 100, 200, 300, 400, 500, 600, 700, 900 and 1,000.
+- There are 10 voting rounds: rounds 100, 200, 300, 400, 500, 600, 700, 800, 900 and 1,000.
 - All players must vote on voting rounds.
 <!--% Note: I chose 1 vote because if we have 3 players and 2 votes, then they are forced to vote for everyone...-->
 - Players must cast exactly 1 vote at every voting rounds.
