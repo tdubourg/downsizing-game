@@ -320,8 +320,8 @@ then present the remaining of the implementation's details.
 
 The accounting of the resources of all players will entirely be hidden from the players and be done exclusively by the judging party.
 
-Players will be given their initial amount of resources and it will be left up to them to track their balance's updates if they need to.
-The judging party's interface will not include anything to read the resources.
+Players will be given their initial amount of resources and it will be left up to them to then track their resources  if
+they need to. The judging party's interface will not include anything to read the resources / balances of any players.
 
 The judging party, before the instantiation of the players, will instantiate every player's resources. As every
 transaction has to go through the judging party, it will also be the one responsible for updating the resources balances.
