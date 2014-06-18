@@ -36,7 +36,7 @@ The Downsizing Game, as originally described by S. Kaitani <!--\cite{downgame} -
 environment where they are given a million of the local currency and have to return it at the end of the game, but they
 can keep the remainder if they managed to make some profit. There are voting rounds where they vote for the other
 players. The player getting the maximum amount of votes wins a one million prize while the one with the least amount of
-votes if removed from the group (the group is _downsized_, giving the name to the game).
+votes is removed from the group (the group is _downsized_, giving the name to the game).
 
 Players can maximize their profit either by trading resources with other players, or win the one million prize.
 
@@ -52,7 +52,7 @@ almost certainly try to cheat in order to win the game and maximize their profit
 ### Example
 We will take a short example on a very small instance of the Downsizing Game to show the game's dynamics. 
 
-_Note that our instance used for the case study and described later will differ in some details to this example (voting rounds, especially), but we keep the example simplistic for now._
+_Note that our instance used for the case study and described in [][gamerules] will differ in some details to this example (voting rounds, especially), but we keep the example simplistic for now._
 
 Let us imagine we have 3 players, 6 rounds, 3 voting rounds (every 2 rounds) and every player can vote for only one
 other player on each voting round.
@@ -119,7 +119,7 @@ The functional requirements are the set of features that our instance of the Dow
 
 ### Game's rules [gamerules]
 
-The rules of our instance of the Downsizing Game will be stated as follows:
+The rules of _our instance_ of the Downsizing Game will be stated as follows:
 
 - The game has a fixed length of 1,000 rounds.
 - 3 players participate in the game.
@@ -207,9 +207,9 @@ from the game.
 #### Transactions
 
 A _transaction_ is one or multiple transfer(s) of _fixed amounts_ of resources between two _identified/authenticated_
-players. The player _sending_ the resource will later be referred to either as the _sending player_ or _paying player_ or
-_payer_ or _sender_. The player _receiving_ the resource will later be referred to either as the _receiving player_ or 
-_paid player_ or _payee_ or _recipient_.
+(see [][playerauth]) players. The player _sending_ the resource will later be referred to either as the _sending player_
+or _paying player_ or _payer_ or _sender_. The player _receiving_ the resource will later be referred to either as the
+_receiving player_ or  _paid player_ or _payee_ or _recipient_.
 
 A transaction can either be unidirectional, that is to say, a player transfers some resource to another player and that is
 all, or bidirectional. In the latter case, two players transfer resources to each other.
@@ -311,7 +311,8 @@ name, is indeed the player she is saying she is.
 
 # Implementation 
 
-In this section, we will first parts of the implementation related to enforcing the _security requirements_ and then present the reste our the implementation.
+In this section, we will first describe parts of the implementation related to enforcing the _security requirements_ and 
+then present the remaining of the implementation's details.
 
 ## Security requirements implementation
 
@@ -319,13 +320,14 @@ In this section, we will first parts of the implementation related to enforcing 
 
 The accounting of the resources of all players will entirely be hidden from the players and be done exclusively by the judging party.
 
-Players will be given their initial amount of resources and it will be left up to them to their balance's updates if they need to, the judging party's interface will not include anything to read the resources.
+Players will be given their initial amount of resources and it will be left up to them to track their balance's updates if they need to.
+The judging party's interface will not include anything to read the resources.
 
-The judging party, before the instanciation of the players, will instanciate every player's resources and as every
-transaction has to go through the judging party, it will be the one responsible for updating the resources balances.
+The judging party, before the instantiation of the players, will instantiate every player's resources. As every
+transaction has to go through the judging party, it will also be the one responsible for updating the resources balances.
 
-In this manner, we do not need any access control mechanism for the players, they do not have any knowledge about the
-real account and as a consequence, no access to it (as they cannot access objects without reference to them, as per
+This way, we do not need any access control mechanism for the players, they do not have any knowledge about the
+"real" accounts and as a consequence, no access to it (as they cannot access objects without reference to them, as per
 [][Assumptions])
 
 ### Judging party exclusiveness aka turn-by-turn enforcement
