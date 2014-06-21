@@ -87,9 +87,10 @@ The work is split into 3 main steps:
 2. Security requirements: design & implementation 
 3. Comparison against existing coding guidelines (see [_Roadmap_][Roadmap])
 
-The second step of the work will bring security requirements that we found to be necessary to be added by intuition. By 
-simply thinking about the different cases that will be faced in the game and what could be attempted by player to cheat on 
-the game and what should be done to ensure those cheating attempts will fail.
+In step 2 above (_Security requirements: design & implementation_), we will define and describe security requirements that we found, by intuition, necessary to be added.
+
+By "by intuition", we mean here: simply thinking about the different cases that will be faced in the game and what could
+be attempted by player to cheat on  the game and what should be done to ensure those cheating attempts will fail.
 
 In the last step, we will compare our already security-aware application to coding guidelines and conclude on what we were
 able to fulfill or not of those guidelines, what applies here and what does not, and what following those guidelines would
