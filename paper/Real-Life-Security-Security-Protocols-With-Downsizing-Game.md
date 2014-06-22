@@ -92,9 +92,10 @@ In step 2 above (_Security requirements: design & implementation_), we will defi
 By "by intuition", we mean here: simply thinking about the different cases that will be faced in the game and what could
 be attempted by player to cheat on  the game and what should be done to ensure those cheating attempts will fail.
 
-In the last step, we will compare our already security-aware application to coding guidelines and conclude on what we were
-able to fulfill or not of those guidelines, what applies here and what does not, and what following those guidelines would
-have changed in the cases where the guidelines would not have been followed.
+In step 3 above (_Comparison against existing coding guidelines_), we will compare our already security-aware (thanks to
+_step 2_) application to coding guidelines. We will conclude on what we were able to fulfill or not of those guidelines
+by ourselves (that is to say, before reading them). We will also analyze what, in the guidelines, applies to our program
+and what does not. Finally, we'll discuss what it would have changed it we had followed guidelines since the beginning.
 
 We will look at the last step as a partial answer to the question "How secure can I code?".
 
