@@ -17,3 +17,6 @@ class Clock(object):
 
     def is_voting_round(self):
         return self.__turn % self.turns_between_voting_rounds is 0
+
+    def current_turn_number(self):
+        return self.__turn

@@ -31,7 +31,7 @@ class Judge(object):
             p = self.players[pid]
             try:
                 self.current_pid = pid
-                p.play_round()
+                p.play_round(self.clock.current_turn_number())
             except PlayerBannedException as e:
                 l("A player was banned.")
                 self.game.loser = e.player
