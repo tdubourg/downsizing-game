@@ -1,13 +1,14 @@
 from config import ALLOWED_TRANSACTIONS_PER_ROUND
-from transactions import BaseTransaction
+from transactions import AbstractTransaction
+from utils import d, l, e
 
-class PlayerKilledException(Exception):
+class PlayerBannedException(Exception):
     """
     This exception will be raised by the judge when he kills a player. 
     It holds the player that has been killed
     """
     def __init__(self, player):
-        super(PlayerKilledException, self).__init__()
+        super(PlayerBannedException, self).__init__()
         self.player = player
 
 class Judge(object):
@@ -24,15 +25,18 @@ class Judge(object):
         self.interface = {"make_transaction": self.make_transaction}
 
     def play_round(self):
+        d("Players ids:", self.game.players_ids)
         for pid in self.game.players_ids:
+            d("Current player id:", pid)
             p = self.players[pid]
             try:
                 self.current_pid = pid
                 p.play_round()
-            except PlayerKilledException as e:
+            except PlayerBannedException as e:
+                l("A player was banned.")
                 self.game.loser = e.player
                 return False
-            print self.game
+            l(self.game)
             self.clock.tick()
             if self.clock.is_over():
                 print "Game Over"

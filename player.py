@@ -1,4 +1,4 @@
-from transactions import BaseTransaction
+from transactions import AbstractTransaction, UnidirectionalTransaction
 from transactions import Resources
 class Player(object):
     def __init__(self, player_id, players_ids, starting_resources, interface):
@@ -16,10 +16,11 @@ class Player(object):
 
     def play_round(self):
         print "Player", self.player_id, "here, I'm playing, yay!"
-        tr = BaseTransaction(
+        tr = UnidirectionalTransaction(
             self.player_id,
             self.players_ids[-1],
-            Resources.CASH, self.resources[Resources.CASH]/2
+            Resources.CASH,
+            self.resources[Resources.CASH]/2
         )
         self.interface['make_transaction'](tr)
 
