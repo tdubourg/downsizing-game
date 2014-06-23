@@ -45,7 +45,7 @@ class Judge(object):
 
     def make_transaction(self, transaction):
         try:
-            if not isinstance(transaction, BaseTransaction):
+            if not isinstance(transaction, AbstractTransaction):
                 return False
             if transaction.player_from is not self.current_pid:
                 return False
