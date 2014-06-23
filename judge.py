@@ -41,7 +41,7 @@ class Judge(object):
             if self.clock.is_over():
                 print "Game Over"
                 return False
-            return True
+        return True
 
     def make_transaction(self, transaction):
         try:
