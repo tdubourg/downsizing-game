@@ -2,7 +2,7 @@
 
 from judge import Judge
 from clock import Clock
-from player import Player
+from player import DummyPlayer
 
 from transactions import Resources
 
@@ -21,7 +21,7 @@ class Game(object):
         for r in Resources:
             starting_resources[r] = 100  # TODO: This is temporary, add some config / constants and implement properly later
         # Note: passing a copy of the dictionaries, as we do not want players to share anything...
-        self.players = [Player(i, self.players_ids, dict(starting_resources), dict(self.j.interface)) for i in self.players_ids]
+        self.players = [DummyPlayer(i, self.players_ids, dict(starting_resources), dict(self.j.interface)) for i in self.players_ids]
         print "Initialized players:", self.players
         self.players_resources = [dict(starting_resources) for _ in self.players_ids]
         self.j.players = self.players
