@@ -43,8 +43,12 @@ Players can maximize their profit either by trading resources with other players
 Players can make transactions between each other in order to trade every sort of resources that is available in the
 game:  Money, trust, loyalty, and votes.
 
+The game is overseen by a _judging party_, also called _game master_. Its role in the original game is to make sure that
+nobody is cheating and everything in the game happens according to the game's rules. {TODO: CHECK EXACTLY WHAT IT DOES IN
+THE MANGA}
+
 We will describe the exact instance of the game that we will use (with variations in the rules) in details in
-[][gamerules]
+[][gamerules].
 
 Although it may seem like a simple game, it poses interesting challenges in terms of security because players will
 almost certainly try to cheat in order to win the game and maximize their profit.
@@ -105,7 +109,7 @@ We will look at the last step as a partial answer to the question "How secure ca
 
 In our design and implementation of the Downsizing Game, we will start from the following assumptions:
 
-1. The communication channels, e.g. between the players and the judging party, are secure
+1. The communication channels, e.g. between the players and the [judging party][judge], are secure
 2. Everything is happening in the same process on a single CPU machine. That is to say: only one instruction can be executed 
 at a time, there is no parallelism/concurrency.
 3. The technology used to develop the game prevents arbitrary memory from being read. A player program will thus only be 
@@ -156,6 +160,10 @@ winning prize.
 of the game, as she will keep the remainder of the money after giving back the original one million dollars.
 
 ### Definitions & needed features
+
+#### Judging party [judge]
+The judging party is a neutral (not affiliated with any player) entity whose responsability is to maintain order in the
+game and make sure nobody is attempting to cheat and that, to the extent of its knowledge, every transaction is valid.
 
 #### Current player
 Players play on a turn-by-turn basis. We will call _current player_ the player of which it is currently the turn.
@@ -267,6 +275,19 @@ any of them is not, then the bidirectional transaction is also invalid.
 Now that we have defined functional requirements, we are going to define and describe the addition _security requirements_ 
 that are necessary to ensure the players do not exploit singularities of the game in order to achieve
 behaviours that should not be achieved according to the rules.
+
+### Game state alteration
+
+The judging party must be the only one allowed to alter the state of the game (including applying transactions). Players
+talk to it when they want to make a transaction and it validates (or invalidates) it and applies it (or refuses it).
+
+The _game state_ here refers to the balances of all players (including scores), the current round number, the history of
+transactions and the state of all transactions in the history.
+
+### Judging party neutrality
+
+The judging party must not be manipulated by players in any way in order to achieve its neutrality. Players should not
+be able to alter the state of the judging party or tamper with any of its internal data.
 
 ### Resources accounting protection
 
