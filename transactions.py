@@ -1,11 +1,21 @@
 from enum import Enum
+from utils import i, d
 
 Resources = Enum("CASH", "VOTE", "TRUST")
 
 class AbstractTransaction(object):
     """Transaction interface"""
+    last_id = -1
+
+    @staticmethod
+    def next_id():
+        # @TODO thread safety?
+        AbstractTransaction.last_id += 1
+        return AbstractTransaction.last_id
+
     def __init__(self):
         super(AbstractTransaction, self).__init__()
+        self._id = AbstractTransaction.next_id()
     
     def is_valid(self, judge):
         """
@@ -79,6 +89,7 @@ class UnidirectionalTransaction(AbstractTransaction):
         return True
 
     def apply(self, players_resources):
+        i("Transaction", self._id, "is being applied.")
         players_resources[self.player_from][self.resource_type] -= self.amount
         players_resources[self.player_to][self.resource_type] += self.amount
 
