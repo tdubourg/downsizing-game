@@ -144,7 +144,7 @@ from cheating.
 - Every time a player receives a vote, his _score_ increases by 1.
 - At the end of the game, the player(s) with the highest score win(s). The one(s) with the lowest score lose(s).
 - The winning player(s) earn(s) 1 million dollars (evenly split, if multiple winners).
-
+- If a player is banned (because of cheating), she has to return the money she was given at the beginning as well. If she cannot, she is considered as having a debt, as if she had finished the game with a debt.
 <!-- 
 \vspace{1\baselineskip}
 -->
@@ -203,8 +203,9 @@ Players can also trade their score as a _resource_. The initial score is zero ([
 % necessary for the game itself, it does not, imho, represent a specific security check 
 -->
 
-A cheater is a player that breaks one or several game's rules. Cheaters must be immediately killed and thus removed 
-from the game.
+A cheater is a player that breaks one or several game's rules. Cheaters must be immediately banned and thus removed
+from the game. Banned players cannot participate in the game anymore. As such, they will not be able to use the game
+again to purge their debt if they have some.
 
 #### Transactions
 
@@ -476,9 +477,9 @@ order:
 
 ### Cheaters death and resources owed
 
-If, at the moment a cheater is kill, she owes some resources to another player, the remaining resources of the killed player will be
-transferred to the one they were owed to, up the owed amount, and up to the remaining balance of this resource on this killed
-player account.
+If, at the moment a cheater is banned, she owes some resources to another player, the remaining resources of the banned
+player will be transferred to the one they were owed to, up the owed amount, and up to the remaining balance of this
+resource on this banned player account.
 
 If she owes resources to _multiple_ players. The judging party will distribute the money proportionately, rounded to the closest
 integer. The exact formula is:
@@ -566,7 +567,7 @@ If we have enough time, we will also try to compare against other coding guideli
 The following parts and/or rules of the game and/or previous decisions could be changed in order to make the game a little 
 bit more complex but a little bit more realistic in some way:
 
-- When a cheater is killed, distributions of the cheater's remaining resources so that we try to minimize the amount of debts remaining open or so that we minimize the dissatisfaction of the loaners.
+- When a cheater is banned, do distribution of the cheater's remaining resources so that we try to minimize the amount of debts remaining open or so that we minimize the dissatisfaction of the loaners.
 - Allowing _cancellation transactions_ (together with a _refund_) for _delayed_ transactions. E.g.: a player finally does not want to give that many votes to another player, so she asks for cancellation and proposes a given amount as a refund for the cancelling of the "contract". As any other transaction, both players would need to agree. The judging party would then simply _discard_ the remaining open delayed transaction upon applying the _cancellation transaction_.
 - Give players an interface to declare the tradable resources they have to the judging party. It would allow to model real life 
 trade where businesses might have exclusive resources that they are alone to possess, compared to everyone trading the same resources.
@@ -608,7 +609,7 @@ those suggestions in the review comments.
             try:
                 current_pid = pid
                 p.play_round()
-            except PlayerKilledException as e:
+            except PlayerBannedException as e:
                 game.loser = e.player
                 return False
             clock.tick()
