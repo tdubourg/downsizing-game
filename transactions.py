@@ -6,6 +6,8 @@ Resources = Enum("CASH", "VOTE", "TRUST")
 class AbstractTransaction(object):
     """Transaction interface"""
     last_id = -1
+    player_1 = None
+    player_2 = None
 
     @staticmethod
     def next_id():
@@ -28,7 +30,7 @@ class AbstractTransaction(object):
             and application
         This is a non-abstract method
         """
-        cl = self.clone()
+        cl = self.__class__.clone(self)
         valid = cl._is_valid(judge)
         if valid:
             return (True, cl)
@@ -62,6 +64,10 @@ class AbstractTransaction(object):
     def __str__(self):
         return "Transaction, id=" + str(self._id)
 
+    def get_data(self):
+        d("WTF????")
+        return self.__dict__
+
 class UnidirectionalTransaction(AbstractTransaction):
     """
     UnidirectionalTransaction are IMMEDIATE and unidirectional (transfer is done from one player to the other,
@@ -77,6 +83,9 @@ class UnidirectionalTransaction(AbstractTransaction):
         super(UnidirectionalTransaction, self).__init__()
         self.player_from = player_from
         self.player_to = player_to
+        # Just so that we respect the interface:
+        self.player_1 = self.player_from
+        self.player_2 = self.player_to
         self.resource_type = resource_type
         try:
             self.amount = int(amount)
@@ -126,6 +135,9 @@ class BidirectionalTransaction(AbstractTransaction):
         super(BidirectionalTransaction, self).__init__()
         self.transaction_1to2 = UnidirectionalTransaction(player_1, player_2, rtype_1to2, amount_1to2)
         self.transaction_2to1 = UnidirectionalTransaction(player_2, player_1, rtype_2to1, amount_2to1)
+        # To respect the interface
+        self.player_1 = player_1
+        self.player_2 = player_2
 
     def _is_valid(self, judge):
         # Note: We already recreated the unidirectional internal transactions so we use the no-copy/in-place
@@ -152,6 +164,13 @@ class BidirectionalTransaction(AbstractTransaction):
             + "\n\t\tdirection=Bidirectional" \
             + "\n\t\ttransaction_1to2=" + str(self.transaction_1to2) \
             + "\n\t\ttransaction_2to1=" + str(self.transaction_2to1)
+
+    def get_data(self):
+        d("WAAT")
+        data = dict(self.__dict__)
+        data['transaction_1to2'] = self.transaction_1to2.get_data()
+        data['transaction_2to1'] = self.transaction_2to1.get_data()
+        return data
 
 class ScheduledUnidirectionalTransaction(UnidirectionalTransaction):
     """
@@ -188,9 +207,10 @@ class ScheduledBidirectionalTransaction(BidirectionalTransaction):
         ScheduledUnidirectionalTransaction
     """
     def __init__(self, player_1, player_2, rtype_1to2, amount_1to2, deadline_1to2, rtype_2to1, amount_2to1, deadline_2to1):
-        super(ScheduledBidirectionalTransaction, self).__init__(player_1, player_2, rtype_1to2, amount_1to2, rtype_2to1, amount_2to1)
         if deadline_1to2 is None and deadline_2to1 is None:
             raise ValueError("At least one of the deadlines should not be None. At least one of the transactions have to be scheduled")
+        
+        super(ScheduledBidirectionalTransaction, self).__init__(player_1, player_2, rtype_1to2, amount_1to2, rtype_2to1, amount_2to1)
 
         if deadline_1to2 is not None:
             self.transaction_1to2 = ScheduledUnidirectionalTransaction(player_1, player_2, rtype_1to2, amount_1to2, deadline_1to2)

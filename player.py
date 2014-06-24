@@ -1,4 +1,3 @@
-from transactions import *
 from transactions import Resources
 from utils import i, e, d
 
@@ -27,18 +26,25 @@ class AbstractPlayer(object):
         )
         return s
 
+    def agree_with_transaction(self, tr_data_dict):
+        raise NotImplementedError()
+
 class DummyPlayer(AbstractPlayer):
     """Dummy Player!"""
 
     def play_round(self, current_round):
         d('Dummy player', self.player_id, 'is playing yay!')
-        tr = UnidirectionalTransaction(
+        tr = (
             self.player_id,
             self.players_ids[self.player_id-1],  # Just transfer money to the player that is player just before us
             Resources.CASH,
             self.resources[Resources.CASH]/2
         )
-        self.interface['make_transaction'](tr)
+        self.interface['make_transaction'](type="UnidirectionalTransaction", args=tr)
+
+    def agree_with_transaction(self, tr_data_dict):
+        d('DummyPlayer', self.player_id, "accepts transaction", tr_data_dict['_id'])
+        return True
 
 class CheaterPlayer(AbstractPlayer):
     """I am going to attempt to cheat"""
@@ -54,7 +60,7 @@ class CheaterPlayer(AbstractPlayer):
         # To appeal other players, we offer them X > Y cash in exchange of Y cash (in other words: free cash!)
         amount1 = self.rr(0, 1000000)
         amount2 = self.rr(amount1, 1000000)
-        return ScheduledBidirectionalTransaction(
+        return (
             self.c(self.other_player_ids),  # Just transfer money to the player that is player just before us
             self.player_id,
             Resources.CASH,
@@ -71,5 +77,18 @@ class CheaterPlayer(AbstractPlayer):
         # or just never pay them back
         #@TODO
         tr = self.random_scheduled_transaction(round_number)
-        while not self.interface['make_transaction'](tr):
+        while not self.interface['make_transaction'](type="ScheduledBidirectionalTransaction", args=tr):
             tr = self.random_scheduled_transaction(round_number)
+
+    def agree_with_transaction(self, tr_data_dict):
+        d("Cheater player asked about", tr_data_dict)
+        if tr_data_dict['player_2'] is self.player_id:
+            if '_deadline' in tr_data_dict['transaction_2to1']:
+                d('Cheater player', self.player_id, "is accepting the transaction")
+            else:
+                d('Cheater player', self.player_id, "is refusing the transaction because delay_2to1 no in tr_data_dict",)
+                return False
+            return True
+        else:
+            d('Cheater player', self.player_id, "is refusing the transaction because player_2=", tr_data_dict['player_2'])
+            return False
