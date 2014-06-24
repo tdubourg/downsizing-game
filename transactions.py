@@ -60,7 +60,10 @@ class AbstractTransaction(object):
         raise NotImplementedError()
 
 class UnidirectionalTransaction(AbstractTransaction):
-    """Base class for a transaction"""
+    """
+    UnidirectionalTransaction are IMMEDIATE and unidirectional (transfer is done from one player to the other,
+    no payback). 
+    """
     def __init__(self, player_from, player_to, resource_type, amount):
         """
         :param player_from: int
@@ -97,7 +100,11 @@ class UnidirectionalTransaction(AbstractTransaction):
         return UnidirectionalTransaction(self.player_from, self.player_to, self.resource_type, self.amount)
 
 class BidirectionalTransaction(AbstractTransaction):
-    """Bidirectional transaction"""
+    """
+        BidirectionalTransaction are immediate bidirectional transactions. It models a "trade" where 
+        there is a transfer of resources from a player to the other and the other pays this resources
+        using another resource and thus making a transfer as well.
+    """
     def __init__(self, player_1, player_2, rtype_1to2, amount_1to2, rtype_2to1, amount_2to1):
         super(BidirectionalTransaction, self).__init__()
         self.transaction_1to2 = UnidirectionalTransaction(player_1, player_2, rtype_1to2, amount_1to2)
@@ -121,16 +128,44 @@ class BidirectionalTransaction(AbstractTransaction):
             self.transaction_2to1.resource_type,
             self.transaction_2to1.resource_type
         )
-
-
         
-class ScheduledTransaction(UnidirectionalTransaction):
-    def __init__(self, player_from, player_to, resource_type, amount, ):
-        super(ScheduledTransaction, self).__init__(player_from, player_to, resource_type, amount)
+class ScheduledUnidirectionalTransaction(UnidirectionalTransaction):
+    """
+        A ScheduledUnidirectionalTransaction is a scheduled transaction, that is unidirectional...
+    """
+    def __init__(self, player_from, player_to, resource_type, amount, deadline):
+        self._deadline = deadline
+        super(ScheduledUnidirectionalTransaction, self).__init__(player_from, player_to, resource_type, amount)
 
     def is_valid(self, judge):
         # First, execute parent's checks
-        if not super(ScheduledTransaction, self).is_valid(judge):
+        if not super(ScheduledUnidirectionalTransaction, self).is_valid(judge):
             return False
         # If nothing went wrong, execute additional checks
-        # We are going to check that the player can indeed play before the round it specified
+        # We are going to check that the player can indeed play before the round it specifiedclass ScheduledUnidirectionalTransaction(UnidirectionalTransaction):
+        judge.is_valid_delay()
+
+class ScheduledBidirectionalTransaction(BidirectionalTransaction):
+    """
+        A ScheduledBidirectionalTransaction is a transaction that contains at least one 
+        ScheduledUnidirectionalTransaction
+    """
+    def __init__(self, player_1, player_2, rtype_1to2, amount_1to2, deadline_1to2, rtype_2to1, amount_2to1, deadline_2to1):
+        super(ScheduledBidirectionalTransaction, self).__init__()
+        if deadline_1to2 is None and deadline_2to1 is None:
+            raise ValueError("At least one of the deadlines should not be None. At least one of the transactions have to be scheduled")
+
+        if deadline_1to2 is not None:
+            self.transaction_1to2 = ScheduledUnidirectionalTransaction(player_1, player_2, rtype_1to2, amount_1to2, deadline_1to2)
+        else:
+            self.transaction_1to2 = UnidirectionalTransaction(player_1, player_2, rtype_1to2, amount_1to2)
+        
+        if deadline_2to1 is not None:
+            self.transaction_2to1 = ScheduledUnidirectionalTransaction(player_2, player_1, rtype_2to1, amount_2to1, deadline_2to1)
+        else:
+            self.transaction_2to1 = UnidirectionalTransaction(player_2, player_1, rtype_2to1, amount_2to1)
+
+    def is_valid(self, judge):
+        # First, execute parent's checks
+        if not super(ScheduledBidirectionalTransaction, self).is_valid(judge):
+            return False
