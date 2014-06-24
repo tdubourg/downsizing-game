@@ -1,4 +1,4 @@
-from transactions import AbstractTransaction, UnidirectionalTransaction
+from transactions import *
 from transactions import Resources
 from utils import i, e, d
 
@@ -30,11 +30,11 @@ class AbstractPlayer(object):
 class DummyPlayer(AbstractPlayer):
     """Dummy Player!"""
 
-    def play_round(self):
+    def play_round(self, current_round):
         d('Dummy player', self.player_id, 'is playing yay!')
         tr = UnidirectionalTransaction(
             self.player_id,
-            self.players_ids[-1],
+            self.players_ids[self.player_id-1],  # Just transfer money to the player that is player just before us
             Resources.CASH,
             self.resources[Resources.CASH]/2
         )
