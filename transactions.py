@@ -59,6 +59,9 @@ class AbstractTransaction(object):
         """
         raise NotImplementedError()
 
+    def __str__(self):
+        return "Transaction, id=" + str(self._id)
+
 class UnidirectionalTransaction(AbstractTransaction):
     """
     UnidirectionalTransaction are IMMEDIATE and unidirectional (transfer is done from one player to the other,
@@ -104,6 +107,15 @@ class UnidirectionalTransaction(AbstractTransaction):
             self.amount
         )
 
+    def __str__(self):
+        return \
+            super(UnidirectionalTransaction, self).__str__() \
+            + "\n\t\t\tdirection=Unidirectional" \
+            + "\n\t\t\tplayer_from=" + str(self.player_from) \
+            + "\n\t\t\tplayer_to=" + str(self.player_to) \
+            + "\n\t\t\tresource_type=" + str(self.resource_type) \
+            + "\n\t\t\tamount=" + str(self.amount)
+
 class BidirectionalTransaction(AbstractTransaction):
     """
         BidirectionalTransaction are immediate bidirectional transactions. It models a "trade" where 
@@ -133,7 +145,14 @@ class BidirectionalTransaction(AbstractTransaction):
             self.transaction_2to1.resource_type,
             self.transaction_2to1.amount
         )
-        
+    
+    def __str__(self):
+        return \
+            super(BidirectionalTransaction, self).__str__() \
+            + "\n\t\tdirection=Bidirectional" \
+            + "\n\t\ttransaction_1to2=" + str(self.transaction_1to2) \
+            + "\n\t\ttransaction_2to1=" + str(self.transaction_2to1)
+
 class ScheduledUnidirectionalTransaction(UnidirectionalTransaction):
     """
         A ScheduledUnidirectionalTransaction is a scheduled transaction, that is unidirectional...
@@ -158,6 +177,10 @@ class ScheduledUnidirectionalTransaction(UnidirectionalTransaction):
             self.amount,
             self._deadline
         )
+    def __str__(self):
+        return \
+            super(ScheduledUnidirectionalTransaction, self).__str__() \
+            + "\n\t\t\tdeadline=" + str(self._deadline)
 
 class ScheduledBidirectionalTransaction(BidirectionalTransaction):
     """
