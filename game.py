@@ -6,6 +6,11 @@ from player import DummyPlayer
 
 from transactions import Resources
 
+from utils import l
+from player import DummyPlayer, CheaterPlayer
+
+from random import choice
+
 class Game(object):
     """
     Game class creates players, initializes the game, ticks the clock, activate the judge, 
@@ -21,10 +26,17 @@ class Game(object):
         for r in Resources:
             starting_resources[r] = 100  # TODO: This is temporary, add some config / constants and implement properly later
         # Note: passing a copy of the dictionaries, as we do not want players to share anything...
-        self.players = [DummyPlayer(i, self.players_ids, dict(starting_resources), dict(self.j.interface)) for i in self.players_ids]
+        self.players = [self.player_instance(i, self.players_ids, dict(starting_resources), dict(self.j.interface)) for i in self.players_ids]
         print "Initialized players:", self.players
         self.players_resources = [dict(starting_resources) for _ in self.players_ids]
         self.j.players = self.players
+
+    def player_instance(self, player_id, player_ids, starting_resources, judge_interface):
+        # This is a local variable but for the sake of instantiating something that looks like a class instantiation
+        # I am using class casing here
+        PlayerClass = DummyPlayer if choice([True, False]) else CheaterPlayer
+        l("Instantiating player of type", PlayerClass)
+        return PlayerClass(player_id, player_ids, starting_resources, judge_interface)
 
     def start(self):
         # Play until the juding stops the game or until the game time is over
