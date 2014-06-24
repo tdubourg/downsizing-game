@@ -165,7 +165,7 @@ class ScheduledBidirectionalTransaction(BidirectionalTransaction):
         ScheduledUnidirectionalTransaction
     """
     def __init__(self, player_1, player_2, rtype_1to2, amount_1to2, deadline_1to2, rtype_2to1, amount_2to1, deadline_2to1):
-        super(ScheduledBidirectionalTransaction, self).__init__()
+        super(ScheduledBidirectionalTransaction, self).__init__(player_1, player_2, rtype_1to2, amount_1to2, rtype_2to1, amount_2to1)
         if deadline_1to2 is None and deadline_2to1 is None:
             raise ValueError("At least one of the deadlines should not be None. At least one of the transactions have to be scheduled")
 
