@@ -17,7 +17,7 @@ contract can take several forms: A contract between two programs about how they 
 business men about a deal between their respective companies,  etc. .  In this paper, we are going to focus on contracts that can be
 modeled as _transactions_ sequences. More specifically, we are going to do a case study using the Downsizing Game invented by <!--
 \cite{downgame} -->. The Downsizing Game puts in place multiple players that are all pursuing the same goal of maximizing their own
-profit. Players can make transactions between each other in order to trade every sort of resources that is available in the game. The
+profit. Two players can make transactions between each other in order to trade every sort of resources that is available in the game. The
 goal of the case study is to see what are the steps to put in place a judging party that will enforce security protocol related to
 cheating  prevention and what are the security requirements we can add on top of the functional requirements. Thorough our work setting
 up such a system and environment, we will report on the issues we face, the solutions we find and the decision we make with the
@@ -40,7 +40,7 @@ votes is removed from the group (the group is _downsized_, giving the name to th
 
 Players can maximize their profit either by trading resources with other players, or win the one million prize.
 
-Players can make transactions between each other in order to trade every sort of resources that is available in the
+Two players can make transactions between each other in order to trade every sort of resources that is available in the
 game:  Money, trust, loyalty, and votes.
 
 The game is overseen by a _judging party_, also called _game master_. Its role in the original game is to make sure that
