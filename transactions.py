@@ -97,7 +97,12 @@ class UnidirectionalTransaction(AbstractTransaction):
         players_resources[self.player_to][self.resource_type] += self.amount
 
     def clone(self):
-        return UnidirectionalTransaction(self.player_from, self.player_to, self.resource_type, self.amount)
+        return UnidirectionalTransaction(
+            self.player_from,
+            self.player_to,
+            self.resource_type,
+            self.amount
+        )
 
 class BidirectionalTransaction(AbstractTransaction):
     """
@@ -126,7 +131,7 @@ class BidirectionalTransaction(AbstractTransaction):
             self.transaction_1to2.resource_type,
             self.transaction_1to2.amount,
             self.transaction_2to1.resource_type,
-            self.transaction_2to1.resource_type
+            self.transaction_2to1.amount
         )
         
 class ScheduledUnidirectionalTransaction(UnidirectionalTransaction):
@@ -144,6 +149,15 @@ class ScheduledUnidirectionalTransaction(UnidirectionalTransaction):
         # If nothing went wrong, execute additional checks
         # We are going to check that the player can indeed play before the round it specifiedclass ScheduledUnidirectionalTransaction(UnidirectionalTransaction):
         judge.is_valid_delay()
+
+    def clone(self):
+        return ScheduledUnidirectionalTransaction(
+            self.player_from,
+            self.player_to,
+            self.resource_type,
+            self.amount,
+            self._deadline
+        )
 
 class ScheduledBidirectionalTransaction(BidirectionalTransaction):
     """
@@ -169,3 +183,19 @@ class ScheduledBidirectionalTransaction(BidirectionalTransaction):
         # First, execute parent's checks
         if not super(ScheduledBidirectionalTransaction, self).is_valid(judge):
             return False
+
+    def clone(self):
+        return ScheduledBidirectionalTransaction(
+            self.transaction_1to2.player_from,
+            self.transaction_1to2.player_to,
+            self.transaction_1to2.resource_type,
+            self.transaction_1to2.amount,
+            self.transaction_1to2._deadline \
+                if isinstance(self.transaction_1to2, ScheduledUnidirectionalTransaction) \
+                else None,
+            self.transaction_2to1.resource_type,
+            self.transaction_2to1.amount,
+            self.transaction_2to1._deadline \
+                if isinstance(self.transaction_2to1, ScheduledUnidirectionalTransaction) \
+                else None,
+        )
