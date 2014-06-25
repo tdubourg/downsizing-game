@@ -1,6 +1,9 @@
 from config import ALLOWED_TRANSACTIONS_PER_ROUND
 from transactions import *
-from utils import d, l, e
+from utils import d, l, e as err, i
+
+from threading import Timer
+from time import time
 
 class PlayerBannedException(Exception):
     """
@@ -10,6 +13,49 @@ class PlayerBannedException(Exception):
     def __init__(self, player):
         super(PlayerBannedException, self).__init__()
         self.player = player
+
+# def timer_func(*args):
+#     l("Forever is over!")
+#     raise Exception("Forever is over")
+
+def player_thread(player, round_number):
+    try:
+        player.play_round(round_number)
+    except SystemExit:
+        l("Thread exited by force!")
+        return
+
+# import threading
+
+# class MyT(threading.Thread):
+#     def exit(self):
+#         print("Exiting??")
+#         raise SystemExit
+
+
+import ctypes
+
+def terminate_thread(thread):
+    """Terminates a python thread from another thread.
+
+    :param thread: a threading.Thread instance
+    """
+    if not thread.isAlive():
+        print ("Thread WAS NOT ALIVE!")
+        return
+
+    exc = ctypes.py_object(SystemExit)
+    res = ctypes.pythonapi.PyThreadState_SetAsyncExc(
+        ctypes.c_long(thread.ident), exc)
+    if res == 0:
+        raise ValueError("nonexistent thread id")
+    elif res > 1:
+        # """if it returns a number greater than one, you're in trouble,
+        # and you should call it again with exc=NULL to revert the effect"""
+        ctypes.pythonapi.PyThreadState_SetAsyncExc(thread.ident, None)
+        raise SystemError("PyThreadState_SetAsyncExc failed")
+    # print ("Waiting for thread to exit...")
+    # thread.join(None)
 
 class Judge(object):
     """
@@ -24,7 +70,8 @@ class Judge(object):
         "ScheduledBidirectionalTransaction": ScheduledBidirectionalTransaction,
     }
 
-    TRANSACTION_ATTEMPTS_QUOTA = 5
+    TRANSACTION_ATTEMPTS_QUOTA = 500000000000
+    TIMEOUT = 1  # seconds
 
     def __init__(self, game, clock):
         super(Judge, self).__init__()
@@ -39,40 +86,72 @@ class Judge(object):
     def play_round(self):
         d("Players ids:", self.players_ids)
         for pid in self.players_ids:
+            d("=" * 30, "Changing player")
             # This is a quick and dirty fix, @TODO
+            d("Banned players", self.banned_players)
             if pid in self.banned_players:
                 continue
             d("Current player id:", pid)
             self.current_player_transaction_attempts = 0
             p = self.players[pid]
+            t = None
+            self.current_pid = pid
             try:
-                self.current_pid = pid
-                p.play_round(self.clock.current_turn_number())
+                t = time()
+                import threading
+                self.current_player_thread = threading.Thread(
+                    target=player_thread, 
+                    args=(p, self.clock.current_turn_number())
+                )
+                self.current_player_thread.start()
+                self.current_player_thread.join(self.TIMEOUT)
+                if self.current_player_thread.is_alive():
+                    l("#"*100)
+                    l("Player", self.current_pid, "timed out! After", time() - t)
+                    l("#"*100)
+                    self.bann_player(pid)
             except PlayerBannedException as e:
-                l("Player", pid, "is being banned.")
-                # self.game.loser = e.player
                 # This is a quick and dirty fix, @TODO
-                self.banned_players.append(pid)
+                self.bann_player(pid)
+            except SystemExit as ex:
+                l("Player", self.current_pid, "timed out (exception)! After", time() - t)
+                self.bann_player(pid)
+                d(ex)
+                return False  # @TODO
             
             # This displays the state of the game
             l(self.game)
 
             self.clock.tick()
             if self.clock.is_over():
-                print "Game Over"
+                l("Game Over")
                 return False
         return True
 
+    def bann_player(self, pid):
+        l("Player", pid, "is being banned.")
+        while self.current_player_thread.is_alive():
+            d("Killing it!")
+            terminate_thread(self.current_player_thread)
+            self.current_player_thread.join(0.01)  # Wait ten ms between each kill attempt
+        self.banned_players.append(pid)
+        l("Banned players:", self.banned_players)
+
+
     def make_transaction(self, **kwargs):
         d("make_transaction()")
+        d("Banned players", self.banned_players)
+        if self.current_pid in self.banned_players:
+            return  # Just return until it times out
         if self.current_player_transaction_attempts > self.TRANSACTION_ATTEMPTS_QUOTA:
-            raise PlayerBannedException("Attempted to many transactions.")
+            self.bann_player(self.current_pid)
+            raise PlayerBannedException("Attempted too many transactions.")
         self.current_player_transaction_attempts += 1
         try:
             type_str = kwargs['type']
             args = kwargs['args']
-        except KeyError as e:
-            d(e)
+        except KeyError as ex:
+            d(ex)
             return False
         d("make_transaction() with:", str(type_str), str('args'))
         try:
