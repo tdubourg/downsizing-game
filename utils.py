@@ -1,8 +1,9 @@
-INFO = True
+INFO = False
 DBG = True
 ERRORS = True
 LOG = True
 
+import sys
 def init():
     # Syntax:
     # LOG_LEVEL = PREVIOUS_LOG_LEVEL | VALUE_FOR_THIS_LOG_LEVEL
@@ -11,14 +12,16 @@ def init():
     global DBG, ERRORS, LOG, INFO
     DBG = INFO | DBG
     ERRORS = DBG | ERRORS
-    LOG = ERRORS | LOG
+    LOG = LOG
     
 def log(*args):
     LOG_LEVEL = args[-1]
     if LOG_LEVEL:
+        space = ""
         for s in args[0]:
-            print s,
-        print ""
+            sys.stdout.write(space + str(s))
+            space = " "  # This is to respect the behaviour of print(), that puts a space between each arg
+        sys.stdout.write("\n")
 
 def e(*args):
     log(args, ERRORS)
@@ -41,13 +44,13 @@ if __name__ == '__main__':
     ERRORS = False
     INFO = False
     init()
-    print "Trying to output with every disabled..."
+    print("Trying to output with every disabled...")
     e("Error")
     d("Debug")
     i("Info")
     l("Log")
 
-    print "Trying LOG log level..."
+    print("Trying LOG log level...")
     LOG = True
     init()
     e("Error")
@@ -56,7 +59,7 @@ if __name__ == '__main__':
     l("Log")
     LOG = False
 
-    print "Trying INFO log level..."
+    print("Trying INFO log level...")
     INFO = True
     init()
     e("Error")
@@ -65,7 +68,7 @@ if __name__ == '__main__':
     l("Log")
     INFO = False
 
-    print "Trying DBG log level..."
+    print("Trying DBG log level...")
     DBG = True
     init()
     e("Error", "hey", "ho")
@@ -74,7 +77,7 @@ if __name__ == '__main__':
     l("Log")
     DBG = False
 
-    print "Trying ERRORS log level..."
+    print("Trying ERRORS log level...")
     ERRORS = True
     init()
     e("Error")
