@@ -1,5 +1,5 @@
 from transactions import Resources
-from utils import i, e, d
+from utils import i, e, d, l
 
 class AbstractPlayer(object):
     def __init__(self, player_id, players_ids, starting_resources, interface):
@@ -76,9 +76,24 @@ class CheaterPlayer(AbstractPlayer):
         # and try to set a impossible deadline (> the end of the game)
         # or just never pay them back
         #@TODO
+        try:
+            self.try_forever(round_number)
+            # Test code for bad players
+            # import time
+            # while True:
+            #     time.sleep(10000)
+        except Exception as ex:
+            d("Gotcha! Now I am going to just hold this CPU!", ex)
+            # import time
+            # while True:
+            #     time.sleep(10000)
+            self.play_round(round_number)
+
+    def try_forever(self, round_number):
         tr = self.random_scheduled_transaction(round_number)
         while not self.interface['make_transaction'](type="ScheduledBidirectionalTransaction", args=tr):
             tr = self.random_scheduled_transaction(round_number)
+
 
     def agree_with_transaction(self, tr_data_dict):
         d("Cheater player asked about", tr_data_dict)
