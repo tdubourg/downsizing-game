@@ -1,4 +1,5 @@
 Latex input:        mmd-article-header
+latex input:        mmd-natbib-plain
 author:             Théo Dubourg
 Title:              Real Life Security - Security Protocols
 Subtitle:           Case Study with the Downsizing Game
