@@ -138,7 +138,7 @@ The rules of _our instance_ of the Downsizing Game will be stated as follows:
 she can keep the remainder of the money for her.
 - At the end of the game, if players cannot give back the entire amount of money that they were given in the beginning, 
 they have contracted a debt that they will have to reimburse.
-- Players can make transactions between each other using every available resource in the game.
+- Two players can make transactions between each other using every available resource in the game.
 - A judging party enforces the game's rules and manages transactions, ensuring their validity and preventing players 
 from cheating.
 - There are 10 voting rounds: rounds 100, 200, 300, 400, 500, 600, 700, 800, 900 and 1,000.
