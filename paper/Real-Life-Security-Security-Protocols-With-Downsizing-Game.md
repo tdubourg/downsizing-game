@@ -497,7 +497,7 @@ order:
 6. Publicly disclose the new number of votes that every player received and their new score.
 7. Go to next round (as per [][roundsdef])
 
-### Cheaters death and resources owed
+### Cheaters ban and resources owed
 
 If, at the moment a cheater is banned, she owes some resources to another player, the remaining resources of the banned
 player will be transferred to the one they were owed to, up the owed amount, and up to the remaining balance of this
