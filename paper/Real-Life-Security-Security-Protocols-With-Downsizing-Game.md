@@ -529,6 +529,11 @@ the object we are going to use anymore. We can then validate and apply the trans
 process is used when passing transactions as a parameter at the step of "player agreement" check (where we check the player
 agrees with the currently being validated transaction).
 
+{TODO: UPDATE: Classes are modifiable too, so we should not provide access to the transactions at ALL. Also, no import is allowed, so that they do not use inspection tools to trigger code execution
+ALSO, they are in the own thread to make sure we can kill them and continue the game and they will not be able to hold the CPU forever}
+
+
+
 ## Implementation of the game / game execution flow
 
 ## Global overview of the game's organization
