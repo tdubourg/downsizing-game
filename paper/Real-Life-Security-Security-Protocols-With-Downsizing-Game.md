@@ -561,7 +561,7 @@ The pseudo-code of a non-voting round is located in the [appendix][coderound]
 -->
 
 ### Voting round
-
+{TODO: EXPLAIN HOW WE REGISTER VOTES AS SPECIAL TRANSACTIONS THAT ARE THEN USED TO CHECK FOR FULFILMENT OF VOTING PROMISES}
 The pseudo-code of a non-voting round will be added in the final version of the paper.
 
 ![Voting Round Sequence Diagram][]
