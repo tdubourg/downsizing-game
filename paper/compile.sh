@@ -17,11 +17,13 @@ multimarkdown --to=latex $f > "$f.tex"
 
 echo "Compiling to PDF..."
 if pdflatex "$f.tex"; then
-	echo "PDF compiled with success. Cleaning LateX mess..."
-	rm -vf "$f.log"
+	echo "PDF compiled with success."
 else
 	echo "PDF Compilation failed"
 fi
+
+echo "Cleaning LateX log..."
+rm -vf "$f.log"
 
 
 echo "Opening PDF..."
