@@ -532,7 +532,7 @@ agrees with the currently being validated transaction).
 {TODO: UPDATE: Classes are modifiable too, so we should not provide access to the transactions at ALL. Also, no import is allowed, so that they do not use inspection tools to trigger code execution
 ALSO, they are in the own thread to make sure we can kill them and continue the game and they will not be able to hold the CPU forever}
 
-
+{TODO: ADD SOMETHING ABOUT CHECKING THE NUMBER OF ROUNDS LEFT TO PREVENT PLAYERS FROM CHEATING WHEN IT IS THE LAST ROUND BY SUBMITTING A BIDIRECTIONAL TRANSACTION THAT WOULD ONLY BE EXECUTED HALF WAY}
 
 ## Implementation of the game / game execution flow
 
