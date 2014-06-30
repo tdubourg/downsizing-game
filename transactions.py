@@ -37,7 +37,7 @@ class AbstractTransaction(object):
         else:
             return (False, None)
 
-    def apply(self, players_resources):
+    def apply(self, judge):
         """
         Apply the transaction to the players' resources
         Abstract method. Has to be overriden by children
@@ -103,10 +103,16 @@ class UnidirectionalTransaction(AbstractTransaction):
             return False
         return True
 
-    def apply(self, players_resources):
+    def apply(self, judge):
         i("Transaction", self._id, "is being applied.")
+        if not judge.clock.has_still(1):
+            raise Exception("Not enough remaining rounds")
+            return False
+        players_resources = judge.game.players_resources
         players_resources[self.player_from][self.resource_type] -= self.amount
         players_resources[self.player_to][self.resource_type] += self.amount
+        judge.current_player_transactions += 1
+        judge.clock.tick()
 
     def clone(self):
         return UnidirectionalTransaction(
@@ -144,9 +150,12 @@ class BidirectionalTransaction(AbstractTransaction):
         # validation method
         return self.transaction_1to2._is_valid(judge) and self.transaction_2to1._is_valid(judge)
 
-    def apply(self, players_resources):
-        self.transaction_1to2.apply(players_resources)
-        self.transaction_2to1.apply(players_resources)
+    def apply(self, judge):
+        if not judge.clock.has_still(1):
+            raise Exception("Not enough remaining rounds")
+            return False
+        self.transaction_1to2.apply(judge)
+        self.transaction_2to1.apply(judge)
 
     def clone(self):
         return BidirectionalTransaction(

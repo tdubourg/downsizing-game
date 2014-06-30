@@ -20,3 +20,6 @@ class Clock(object):
 
     def current_turn_number(self):
         return self.__turn
+
+    def has_still(self, number_of_ticks):
+        return self.maximum_turns < (self.__turn + number_of_ticks)

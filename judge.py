@@ -1,4 +1,4 @@
-from config import ALLOWED_TRANSACTIONS_PER_ROUND
+from config import *
 from transactions import *
 from utils import d, l, e as err, i
 
@@ -70,9 +70,6 @@ class Judge(object):
         "ScheduledBidirectionalTransaction": ScheduledBidirectionalTransaction,
     }
 
-    TRANSACTION_ATTEMPTS_QUOTA = 500000000000
-    TIMEOUT = 1  # seconds
-
     def __init__(self, game, clock):
         super(Judge, self).__init__()
         self.clock = clock
@@ -81,6 +78,7 @@ class Judge(object):
         self.current_pid = None
         self.interface = {"make_transaction": self.make_transaction}
         self.current_player_transaction_attempts = 0 
+        self.current_player_transactions = 0 
         self.banned_players = []
 
     def play_round(self):
@@ -93,6 +91,7 @@ class Judge(object):
                 continue
             d("Current player id:", pid)
             self.current_player_transaction_attempts = 0
+            self.current_player_transactions = 0
             p = self.players[pid]
             t = None
             self.current_pid = pid
@@ -104,13 +103,13 @@ class Judge(object):
                     args=(p, self.clock.current_turn_number())
                 )
                 self.current_player_thread.start()
-                self.current_player_thread.join(self.TIMEOUT)
+                self.current_player_thread.join(PLAYER_TIMEOUT)
                 if self.current_player_thread.is_alive():
                     l("#"*100)
                     l("Player", self.current_pid, "timed out! After", time() - t)
                     l("#"*100)
                     self.bann_player(pid)
-            except PlayerBannedException as e:
+            except PlayerBannedException as err:
                 # This is a quick and dirty fix, @TODO
                 self.bann_player(pid)
             except SystemExit as ex:
@@ -143,7 +142,8 @@ class Judge(object):
         d("Banned players", self.banned_players)
         if self.current_pid in self.banned_players:
             return  # Just return until it times out
-        if self.current_player_transaction_attempts > self.TRANSACTION_ATTEMPTS_QUOTA:
+        if self.current_player_transaction_attempts >= ALLOWED_TRANSACTIONS_ATTEMPTS_PER_ROUND \
+            or self.current_player_transactions >= ALLOWED_TRANSACTIONS_PER_ROUND:
             self.bann_player(self.current_pid)
             raise PlayerBannedException("Attempted too many transactions.")
         self.current_player_transaction_attempts += 1
@@ -175,7 +175,7 @@ class Judge(object):
                 if valid_transaction[0] is True:
                     # Note that there will not be any concurrent modification between the check of the transaction and 
                     l("Transaction is valid, applying it")
-                    valid_transaction[1].apply(self.game.players_resources)
+                    valid_transaction[1].apply(self)
                     # Transaction is applied, tick the clock
                     self.clock.tick()
                     return True
