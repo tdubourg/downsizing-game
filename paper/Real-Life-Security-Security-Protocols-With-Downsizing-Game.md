@@ -69,7 +69,7 @@ The following actions are one of the possible runs of the game (currency is \$ h
 3. Player2 is the current player and buys Player1 1 vote and Player3 1 vote for \$25,000 each.
 4. Voting round. Player2 receives 2 votes from players 1 and 3. Player3 receives a vote from Player2. Scores are 
 now respectively 1, 3 and 2 for players 1, 2 and 3.
-5. Player3 tries to buy votes from the two other players for \$500,000 each, Player1 accepts but Player2 refuses.
+5. Player3 tries to buy votes from the two other players for \$500,000 each, Player2 accepts but Player1 refuses.
 6. Voting round. Player2 votes for Player3 to respect the transaction. Player3 votes for Player1. Player1 finally still votes for Player3. Scores are now respectively respectively 2, 3 and 4 for players 1, 2 and 3.
 
 The Player3 is the only winner and gets the one million prize.
