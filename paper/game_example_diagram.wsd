@@ -1,0 +1,41 @@
+title Game Example 
+
+participant Alice as 1
+participant Bob as 2
+participant Charlie as 3
+
+note over 1, 2, 3: Everyone = 3 votes, $1M
+note over 1, 2, 3: Alice's turn
+1->2: I buy 1 vote for $100k
+2->1: OK
+note over 1, 2, 3: Voting round
+2->1: 1 Vote
+3->2: 1 Vote
+1->3: 1 Vote
+note over 1, 2, 3: Scores: 1 for everyone
+
+note over 1, 2, 3: Bob's turn
+2->1: I buy 1 vote for $25k
+1->2: OK
+2->3: I buy 1 vote for $25k
+3->2: OK
+note over 1, 2, 3: Voting round
+1->2: 1 Vote
+3->1: 1 Vote
+2->3: 1 Vote
+note over 1, 2, 3: Scores: A=1, B=3, C=2
+
+note over 1, 2, 3: Charlie's turn
+3->2: I buy 1 vote for $500k
+2->3: OK
+3->1: I buy 1 vote for $500k
+1->3: NOK
+note over 1, 2, 3: Voting round
+2->3: 1 Vote
+3->1: 1 Vote
+1->3: 1 Vote
+note over 1, 2, 3: Scores: A=2, B=3, C=4
+note over 1, 2, 3: Charlie is the only winner, makes $525k profit
+note over 1, 2, 3: Alice has a debt of $75k
+note over 1, 2, 3: Bob makes $475k profit
+note over 1, 2, 3: End of Game
