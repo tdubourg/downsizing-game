@@ -13,6 +13,14 @@ latex input:        mmd-article-begin-doc
 \begin{abstract}
 --> 
 
+TODO: Remarks during the presentation
+
+- Make relations with real-life scenario cases?/examples
+- Goal of the work was unclear
+- Idea to fix the two previous: maybe a system diagram with arrows pointing at parts of the system
+and with names of the security concerns that arise on this part of the system (that would be described later
+in the paper)
+
 Real life security use cases often include multiple parties talking to each other and making basic contracts between each  other. A
 contract can take several forms: A contract between two programs about how they are going to communicate,  a contract  between two
 business men about a deal between their respective companies,  etc. .  In this paper, we are going to focus on contracts that can be
