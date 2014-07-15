@@ -588,7 +588,8 @@ The pseudo-code of a non-voting round will be added in the final version of the 
 # Roadmap
 
 The roadmap for now is to continue the implementation of the Downsizing Game as described in the current paper and then
-compare this implementation against the following coding guidelines: _"Building Secure Software: How to Avoid Security Problems the Right Way"_, by Viega and McGraw <!-- \cite{coding1} -->
+compare this implementation against the following coding guidelines: _"Building Secure Software: How to Avoid Security
+Problems the Right Way"_, by Viega and McGraw <!-- \cite{coding1} -->
 
 If we have enough time, we will also try to compare against other coding guidelines. 
 
@@ -602,8 +603,12 @@ If we have enough time, we will also try to compare against other coding guideli
 The following parts and/or rules of the game and/or previous decisions could be changed in order to make the game a little 
 bit more complex but a little bit more realistic in some way:
 
-- When a cheater is banned, do distribution of the cheater's remaining resources so that we try to minimize the amount of debts remaining open or so that we minimize the dissatisfaction of the loaners.
-- Allowing _cancellation transactions_ (together with a _refund_) for _delayed_ transactions. E.g.: a player finally does not want to give that many votes to another player, so she asks for cancellation and proposes a given amount as a refund for the cancelling of the "contract". As any other transaction, both players would need to agree. The judging party would then simply _discard_ the remaining open delayed transaction upon applying the _cancellation transaction_.
+- When a cheater is banned, do distribution of the cheater's remaining resources so that we try to minimize the amount of 
+debts remaining open or so that we minimize the dissatisfaction of the loaners.
+- Allowing _cancellation transactions_ (together with a _refund_) for _delayed_ transactions. E.g.: a player finally does 
+not want to give that many votes to another player, so she asks for cancellation and proposes a given amount as a refund for 
+the cancelling of the "contract". As any other transaction, both players would need to agree. The judging party would then 
+simply _discard_ the remaining open delayed transaction upon applying the _cancellation transaction_.
 - Give players an interface to declare the tradable resources they have to the judging party. It would allow to model real life 
 trade where businesses might have exclusive resources that they are alone to possess, compared to everyone trading the same resources.
 - Introducting loyalty and trust "resources".
