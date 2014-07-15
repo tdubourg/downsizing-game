@@ -574,6 +574,7 @@ The pseudo-code of a non-voting round is located in the [appendix][coderound]
 -->
 
 ### Voting round
+{TODO: Check that the TODO on the next line has not already been resolved...}
 {TODO: EXPLAIN HOW WE REGISTER VOTES AS SPECIAL TRANSACTIONS THAT ARE THEN USED TO CHECK FOR FULFILMENT OF VOTING PROMISES}
 The pseudo-code of a non-voting round will be added in the final version of the paper.
 
@@ -584,6 +585,40 @@ The pseudo-code of a non-voting round will be added in the final version of the 
 <!-- 
 \vspace{5\baselineskip}
 -->
+
+# Coding Guidelines Comparison
+
+## Comparison Methodology
+
+The comparison methodology we used is the following: We first groupped together the _security requirements_ that we have
+described here in the paper so far into more general security ideas. We then went through the chapters of the guidelines
+that were related to those global security issues looking for given advices / guidelines that would either target
+specifically something that we did or would approve or disapprove the choice that we did for this specific issue.
+
+### Input Validation
+
+
+### Authentication
+
+TODO
+
+### Eavesdropping
+
+TODO
+
+### Race Condition
+
+TODO
+
+### Resources Protection / Access Control
+
+TODO
+
+### Atomicity
+
+TODO
+
+### TODO
 
 # Roadmap
 
