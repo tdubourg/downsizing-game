@@ -22,10 +22,6 @@ else
 	echo "PDF Compilation failed"
 fi
 
-echo "Cleaning LateX log..."
-rm -vf "$f.log"
-
-
 echo "Opening PDF..."
 evince "$f.pdf" & 
 
