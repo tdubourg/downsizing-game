@@ -13,6 +13,11 @@ latex input:        mmd-article-begin-doc
 \begin{abstract}
 --> 
 
+TODO implementation:
+
+- Add the check with the current player even if the current player is not being involved, so that no one else than the
+current player really can make transactions at her turn.
+
 TODO: Remarks during the presentation
 
 - Make relations with real-life scenario cases?/examples
@@ -588,53 +593,83 @@ The pseudo-code of a non-voting round will be added in the final version of the 
 
 # Coding Guidelines Comparison
 
-## Comparison Methodology
+## Comparison methdology
 
-The comparison methodology we used is the following: We first groupped together the _security requirements_ that we have
-described here in the paper so far into more general security ideas. We then went through the chapters of the guidelines
-that were related to those global security issues looking for given advices / guidelines that would either target
-specifically something that we did or would approve or disapprove the choice that we did for this specific issue.
+We will compare against the guideliens in the following way: we will first explain which themes of the guidelines apply
+in our case and which do not, and justifying why so. Then, for the guidelines that do apply, we will make our best to
+define how much we respect the guidelines or not in our implementation, justified based on the security features/mechanisms
+that we implemented.
 
-### Input Validation
+The complete list of guidelines themes[#coding1][] is the following:
 
-TODO
+- Secure the Weakest Link
+- Practice Defense in Depth
+- Fail Securely
+- Follow the Principle of Least Privilege
+- Compartmentalize
+- Keep It Simple
+- Promote Privacy
+- Remember That Hiding Secrets Is Hard
+- Be Reluctant to Trust
+- Use Your Community Resources
 
-### Authentication
+### Application of the guidelines to our implementation
 
-TODO
+We believe the following guidelines do not apply in our case:
 
-### Eavesdropping
 
-TODO
+The other guidelines apply and we will directly talk about how well they are respected in details.
 
-### Race Condition
+### Secure the Weakest Link
 
-TODO
+_Secure the Weakest Link_ theme is, according to the authors of the guidelines[#coding1][] about always targeting the
+imeplemtnation of security features to protect the currently weakest link in the overall security chain. The reasonning
+behind this statement is that attackers will always use the path of the least resistance when attacking a system: for
+instance they will not try to break your encryption, they will just try to directly get access to a part of the system
+where the information is stored unencrypted, or get access to the decryptiong key using social engineering for instance.
 
-### Resources Protection / Access Control
+In our case, in the early stage of the imeplementation, the weakest link could have been said to be the "Transaction"
+component/class. While the transaction object did do some checks by itself, it was prone to be tampered with (this is a
+Python specific security point: you can tamper with any object if you have access to it). When the time came to review
+the current state of security in the user-to-user trade chain, the first thing we did, instead of trying to add most
+sophisticated checks to the judging party to be able to deal with Transaction objects that would have been tampered
+with, was to actually sort-of _secure_ the Transactions objects. The way we did it was by keeping them in a place where
+the users never actually access them, and instead of passing them a transaction object, pass them a built-in type
+($dict$) that is isolated from the rest of the security chain because we do not reuse it afterwards and it has no
+pointer to any part of the "safe area" of the program nor any other part of the judging party have any link to this
+object after it is passed as a parameter. 
 
-TODO
+### Practice Defense in Depth
 
-### Atomicity
+The summary of the _defense in depth_ in the book is that having to consecutive layers of security, that work different
+ways will hopefully allow you to block attackers that made their way through one of them, with the remaining one.
 
-TODO
+The analogy is made with a bank. An armed guard should normally be enough to prevent someone from holding up a bank. But,
+some attackers might be numerous enough or armed enough so that the guard cannot stop them.
 
-### TODO
+In this event, having a second layer of security that will, for instance, prevent more than a given amout of money to be
+taken away, because there are additional security requirements to get more than this amount, will likely help. Indeed,
+it will first stop some attackers completely, if they are not tooled enough, for instance break into the vault. Or in
+other cases it will slow them down significantly and thus, potentially give enough time for the first level of security
+breach to be detected and someone to act (in the case of the bank, for the police to come).
 
-TODO
+In our case, for instance, this has been applied to transaction validation.
 
-# Roadmap
+Indeed, the current user is the only one who is supposed to be able to submit transactions, because it is when its
+methods get run by the main loop. But if a player manages to get some CPU time outside of its own turn (by managing to
+spawn a thread or using a Timer for instance), the judging party will still check for the id of the player submitting
+the request, to be the current player id. The cheater will thus need to also guess the id of the current player.
 
-The roadmap for now is to continue the implementation of the Downsizing Game as described in the current paper and then
-compare this implementation against the following coding guidelines: _"Building Secure Software: How to Avoid Security
-Problems the Right Way"_, by Viega and McGraw <!-- \cite{coding1} -->
+In addition to this, even if the cheater bruteforces the system and finds the right current player id, the judging
+party, before validating a transaction that involves a given player, will directly ask the player (direct access, no
+possible impersonation/man-in-the-middle) if she is indeed OK with the transaction (even if she did submit it herelf).
 
-If we have enough time, we will also try to compare against other coding guidelines. 
+And, assuming the cheater is smart enough to only perform transaction that do not involve the current player, the
+judging party will still ask the current player whether he is OK that the given transaction is applied on her "quota of
+transactions" for the current round.
 
-<!-- 
-\vspace{1\baselineskip}
- -->
-**Reviewers suggestions** are also welcomed. If reviewers have specific coding guidelines in mind that would especially well apply to our current implementation (in Python), they can submit suggestions together with their review.
+The "quota" itself is another "layer" of security. It will prevent a potential attacker that would have found a breach,
+to exploit it too often, thus reducing the overall impact and slowing down the attack.
 
 # Future work: Game complexification
 
