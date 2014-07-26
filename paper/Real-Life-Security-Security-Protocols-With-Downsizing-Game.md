@@ -671,6 +671,41 @@ transactions" for the current round.
 The "quota" itself is another "layer" of security. It will prevent a potential attacker that would have found a breach,
 to exploit it too often, thus reducing the overall impact and slowing down the attack.
 
+### Fail Securily
+
+The idea behind "fail securely" is not much about something _to do_ but more about things _not to do_. THe basic idea
+is: make sure that when you end up in a failure state, you do not fall back to an unsecure mode. Examples are given
+where, for instance when a client and a server software could not find any common authentication protocol, the client
+would simply download a new authentication protocol from the server. Then, a rogue server could simply refuse all the
+protocols a client would currently be compatible with and force the client into downloading a new authentication
+protocol that is in fact a rogue one and will authenticate this server as another secure server.
+
+In our case, such case of unsecure failure could have happene if, for instance, we were to give reasons for transactions
+to be refused.
+
+More precisely, imagine if, when the "buyer" does not have the sufficient funds, we would return to the "seller" saying
+"the transaction was denied because of a too low balance". We do not give the balance information here, so it seems OK,
+does not it? In fact it is not. Becaue one could simply guess or even bisect (in case the numnber of tries is reduced)
+the balance of the other player by submitting transactions of decreasing amounts (starting a a very high amount), until
+the transaction validates.
+
+Having the balance information of another player is both an exploit of the system, as it is not supposed to happen, and
+you the only one with this "power", which makes the game unfair, but it also enables the attacker to trade with more
+sophisticated information, maximizing its profit, and avoiding potentially payment defaults by not selling to players
+that have a too low balance.
+
+### Follow the Principle of Least Privilege
+
+The "least privilege principle" is a reknown paradigm in security, not only in computer science: Even if you have the
+highest level of trust in a person, if you give him or her more privileges than he/she needs, you are putting yourself
+at higher risks than if you did not. Indeed, even if you are giving the key of your house, to feed the pets while you
+are in vacation, to your life-long best friend, the probability that something unwanted happens in your house is not
+nil.
+
+That could even be indirectly your friend's fault. He could loose the keys. And if you had isolated your pets into the
+garage and only given the garage's key fo your friend. Then nobody could enter the house. [TODO: Continue here]
+
+
 # Future work: Game complexification
 
 The following parts and/or rules of the game and/or previous decisions could be changed in order to make the game a little 
