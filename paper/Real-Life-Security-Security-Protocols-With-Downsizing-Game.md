@@ -703,7 +703,29 @@ are in vacation, to your life-long best friend, the probability that something u
 nil.
 
 That could even be indirectly your friend's fault. He could loose the keys. And if you had isolated your pets into the
-garage and only given the garage's key fo your friend. Then nobody could enter the house. [TODO: Continue here]
+garage and only given the garage's key fo your friend. Then nobody could enter the house. We will by the way see that
+the _compatmentalize_ guideline presented later on makes it easier to apply this principle.
+
+In our case, the principle can be applied in many different places.
+
+The first place is for instance the player resources balance. As the player has the starting amount of resources passed
+to him at the beginning of the game, the player does not need to have any additional information about the balances. We
+could have had an access control system in order to allow users to read this information but not write it, but that
+would have been against the principle of the least privilege: here, the players do not need read access to this
+information, so we do not give it to them.
+
+Another good example, that follows the analogy of the house, is the ability to call the judging party. One could have
+thought of passing the judging party's object to the players at the beginning. They could then be able to talk to him as
+they have a reference to him. But this is much more privileges than necessary. What do the players need? They need
+access to specific methods of the judging party's object. Then, we only give them access to those specific method: we
+export the methods pointer and give this to the player. So the player has access to the method, not the entire object,
+the same way your friend should only have access to the pet area and not the entire house.
+
+The same principle is applied when asking for agreement over the transactions: what do players need in the end? They do
+not need a Transaction object, they simply need the data that the object is carrying: amount, delays, type of
+transaction... So we generate a dictionary that contains this data for easy access and the player is only given this.
+
+[TODO: Continue here: next guideline]
 
 
 # Future work: Game complexification
