@@ -615,8 +615,13 @@ The complete list of guidelines themes[#coding1][] is the following:
 
 ### Application of the guidelines to our implementation
 
-We believe the following guidelines do not apply in our case:
+We believe the following guidelines do not apply (or not completely) in our case:
 
+- KISS: The KISS principle is separated between how the _program itself_ should be simple and how it should be simple
+for the end user. The _end user_ part of it is not really relevant for us as we do not really have _users_ but more
+_potential attackers_ that are the players.
+- Promote Privacy: This one is directly related to _end users_ and even more to _human beings_, it does not apply to our
+ implementaiton that has Python AI code as _end user_.
 
 The other guidelines apply and we will directly talk about how well they are respected in details.
 
@@ -639,7 +644,7 @@ the users never actually access them, and instead of passing them a transaction 
 pointer to any part of the "safe area" of the program nor any other part of the judging party have any link to this
 object after it is passed as a parameter. 
 
-### Practice Defense in Depth
+### Practice Defense in Depth [defindepth]
 
 The summary of the _defense in depth_ in the book is that having to consecutive layers of security, that work different
 ways will hopefully allow you to block attackers that made their way through one of them, with the remaining one.
@@ -671,7 +676,7 @@ transactions" for the current round.
 The "quota" itself is another "layer" of security. It will prevent a potential attacker that would have found a breach,
 to exploit it too often, thus reducing the overall impact and slowing down the attack.
 
-### Fail Securily
+### Fail Securily [failsafe]
 
 The idea behind "fail securely" is not much about something _to do_ but more about things _not to do_. THe basic idea
 is: make sure that when you end up in a failure state, you do not fall back to an unsecure mode. Examples are given
@@ -694,7 +699,7 @@ you the only one with this "power", which makes the game unfair, but it also ena
 sophisticated information, maximizing its profit, and avoiding potentially payment defaults by not selling to players
 that have a too low balance.
 
-### Follow the Principle of Least Privilege
+### Follow the Principle of Least Privilege [leastpriv]
 
 The "least privilege principle" is a reknown paradigm in security, not only in computer science: Even if you have the
 highest level of trust in a person, if you give him or her more privileges than he/she needs, you are putting yourself
@@ -704,7 +709,7 @@ nil.
 
 That could even be indirectly your friend's fault. He could loose the keys. And if you had isolated your pets into the
 garage and only given the garage's key fo your friend. Then nobody could enter the house. We will by the way see that
-the _compatmentalize_ guideline presented later on makes it easier to apply this principle.
+the _compartmentalize_ guideline presented later on makes it easier to apply this principle.
 
 In our case, the principle can be applied in many different places.
 
@@ -725,7 +730,67 @@ The same principle is applied when asking for agreement over the transactions: w
 not need a Transaction object, they simply need the data that the object is carrying: amount, delays, type of
 transaction... So we generate a dictionary that contains this data for easy access and the player is only given this.
 
-[TODO: Continue here: next guideline]
+### Compartmentalize [compartment]
+
+Compartmentalize is described in the [guidelines][#coding1] as a way to limit the amount of damage that can be dealt to
+a system when an attacker breaks in. This is in some points similar to [defense in depth][defindepth]. We will also see
+in the next guideline (KISS) that it can be in conflict with it sometimes.
+
+If we take the analogy of the pet-sitter previously described again: so you have decided that you will not give more
+privilege than necessary to the pet-sitter. Thus you want to give him or her only access to an area where your pets are
+confined. Even if your pets are in the garage, if you do not have a separate entrance and lock for the garage, the pet-
+sitter will still need to go through the house in order to get there, thus making it impossible to give him or her only
+the least possible privileges.
+
+The basic idea here is to try to break the program down into the smallest viable independant parts. Once this is done,
+it is easier to only give permission to access the parts that it should access and not to the parts that are not
+supposed to be accessed.
+
+Compartmentalization is only useful if you have multiple roles, though. As if everyone always needs access to all
+compartments anyway, then this does not change much.
+
+This guideline thus does not apply much to our implementation. Indeed the only role we have (of external entities) is
+the one of "player". All players need the same access and there is not much compartmentalization that can be done.
+
+We could, though, maybe consider that for instance, we could have compartmentalized the judging party into several 
+different entities:
+
+- A transaction validator
+- A player manager
+
+Those two parts (except some parts of the transaction validation) are basically handled, or accessible and directly
+manipulated, by the judging party. But the fact that Python allows all sorts of manipulation to objects you have
+reference to would have made it quite hard anyway to have those two entities communicate with each other synchroneously
+without providing, to an attacker that would have got access to one of them, access to the other one.
+
+### Keep It Simple, Stupid! (KISS) [kiss]
+
+The KISS principle is reknown outside of security too. The KISS principle is more or less composed in some parts, of
+tautology: if you increase the complexity of your program, you increase the risk of bugs. This is pretty obvious, as one
+could argue that bugs have a probability to appear for every line of code.
+
+The guidelines explain that in terms of security, one of ways the KISS principle can manifest itself is into
+concentrating security-critical operations in a small number of _choke points_. This will create a small, easily
+controlled interface where everything has to go through. The analogy is performed with a stadium: the more entrances
+there are, the more complicated it gets to perform high quality control on absolutely everyone.
+
+The balance between KISS and compartmentalized/defense in depth is that we should break things down into smaller chunks
+and/or provide several layers of security up to a point where the system still remains simple enough. "simple enough"
+being the hard part to define and unfortunately there is no secret general recipe for that.
+
+In our implementation the choke point can indeed be considered as the judging party: by having a centralized interface
+through which every user has to go in order to communicate with another user, we avoid the need to control several
+channels of communication with their own specificities and/or security implications each.
+
+The second part of the KISS principle as described in the guidelines explains how _end users_ should have a simple
+enough secure system because they will not deal with security themselves. We are not really concerned about this part
+though as we do not really have any users but we could argue that we have only attackers: indeed, the goal of the
+players is to win the game and, cheating is one of the ways to achieve that, thus, one of the actions players should try
+to perform is cheating.
+
+### Be Reluctant to trust
+
+[TODO: Continue here: last 2 guidelines!]
 
 
 # Future work: Game complexification
