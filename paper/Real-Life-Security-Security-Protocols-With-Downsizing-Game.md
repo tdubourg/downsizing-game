@@ -593,7 +593,7 @@ The pseudo-code of a non-voting round will be added in the final version of the 
 
 # Coding Guidelines Comparison
 
-## Comparison methdology
+## Comparison methodology
 
 We will compare against the guideliens in the following way: we will first explain which themes of the guidelines apply
 in our case and which do not, and justifying why so. Then, for the guidelines that do apply, we will make our best to
@@ -617,11 +617,18 @@ The complete list of guidelines themes[#coding1][] is the following:
 
 We believe the following guidelines do not apply (or not completely) in our case:
 
-- KISS: The KISS principle is separated between how the _program itself_ should be simple and how it should be simple
+- "KISS": The KISS principle is separated between how the _program itself_ should be simple and how it should be simple
 for the end user. The _end user_ part of it is not really relevant for us as we do not really have _users_ but more
-_potential attackers_ that are the players.
-- Promote Privacy: This one is directly related to _end users_ and even more to _human beings_, it does not apply to our
+_potential attackers_ that are the players. We will still review it a little, but not in depth.
+- "Promote Privacy": This one is directly related to _end users_ and even more to _human beings_, it does not apply to our
  implementaiton that has Python AI code as _end user_.
+- "Remember That Hiding Secrets Is Hard": Our program is both OpenSource and not compiled, which means that there is 
+basically absolutely no secrets anywhere. Moreover, this guideline is mostly about commercial-related activites, 
+protecting data that belongs to someone, etc. which is not really our case.
+- "Be Reluctant To Trust" & "Use Your Community Resources": Those two chapters of the guidelines are entirely focused on 
+off-the-shell components and libraries. They invite not to trust blindly and explain trust is transitive. They also deal
+ with the fact _widely used_ software is _less likely_ to be buggy but without being a certitude. We do not use 
+any external library to implement security features, thus there is not much to review about those two.
 
 The other guidelines apply and we will directly talk about how well they are respected in details.
 
@@ -787,10 +794,6 @@ enough secure system because they will not deal with security themselves. We are
 though as we do not really have any users but we could argue that we have only attackers: indeed, the goal of the
 players is to win the game and, cheating is one of the ways to achieve that, thus, one of the actions players should try
 to perform is cheating.
-
-### Be Reluctant to trust
-
-[TODO: Continue here: last 2 guidelines!]
 
 
 # Future work: Game complexification
