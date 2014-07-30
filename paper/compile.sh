@@ -1,6 +1,6 @@
 #!/bin/bash
 
-f=`find . -name '*.md' | head -n1`
+f="Real-Life-Security-Security-Protocols-With-Downsizing-Game.md"
 echo "Found file $f to compile..."
 # MMD_TEXT_FILES_DIR is where you downloaded https://github.com/fletcher/peg-multimarkdown-latex-support
 dir=$MMD_TEX_FILES_DIR
