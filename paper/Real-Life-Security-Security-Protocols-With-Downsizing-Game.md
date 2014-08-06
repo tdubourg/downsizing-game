@@ -16,7 +16,8 @@ latex input:        mmd-article-begin-doc
 TODO implementation:
 
 - Add the check with the current player even if the current player is not being involved, so that no one else than the
-current player really can make transactions at her turn.
+current player really can make transactions at her turn (check for "being allowed to run this transaction on your quota")
+- Add passwords checks
 
 TODO: Remarks during the presentation
 
@@ -595,11 +596,13 @@ The pseudo-code of a non-voting round will be added in the final version of the 
 
 ## Comparison methodology
 
-We will compare against the guideliens in the following way: we will first explain which themes of the guidelines apply
-in our case and which do not, and justifying why so. Then, for the guidelines that do apply, we will make our best to
+We will compare against the guidelines in the following way: we will first explain which themes of the guidelines apply
+in our case and which do not, and justify why so. Then, for the guidelines that do apply, we will make our best to
 define how much we respect the guidelines or not in our implementation, justified based on the security features/mechanisms
 that we implemented.
-
+<!-- 
+\vspace{1\baselineskip}
+-->
 The complete list of guidelines themes[#coding1][] is the following:
 
 - Secure the Weakest Link
@@ -617,14 +620,17 @@ The complete list of guidelines themes[#coding1][] is the following:
 
 We believe the following guidelines do not apply (or not completely) in our case:
 
-- "KISS": The KISS principle is separated between how the _program itself_ should be simple and how it should be simple
-for the end user. The _end user_ part of it is not really relevant for us as we do not really have _users_ but more
-_potential attackers_ that are the players. We will still review it a little, but not in depth.
-- "Promote Privacy": This one is directly related to _end users_ and even more to _human beings_, it does not apply to our
- implementaiton that has Python AI code as _end user_.
-- "Remember That Hiding Secrets Is Hard": Our program is both OpenSource and not compiled, which means that there is 
-basically absolutely no secrets anywhere. Moreover, this guideline is mostly about commercial-related activites, 
-protecting data that belongs to someone, etc. which is not really our case.
+- "KISS": The KISS chapter of the guidelines is separated between how the _program itself_ should be simple and how it
+should be simple _for the end user_. The _end user_ part of it is not really relevant for us as we do not really have
+_users_ but more _potential attackers_ that are the players. We will thus only review the part about the _program itself_
+
+- "Promote Privacy": This chapter is directly related to _end users_ and even more to _human beings_, it does not apply
+to our  implementaiton that has Python AI code as _end user_.
+
+- "Remember That Hiding Secrets Is Hard": Our program is both OpenSource and not compiled. Moreover, we do not use any
+secret-based technique like serial or private key or seed. Moreover, this guideline is mostly about commercial-related
+activites, protecting data that belongs to someone, etc. which is not really our case.
+
 - "Be Reluctant To Trust" & "Use Your Community Resources": Those two chapters of the guidelines are entirely focused on 
 off-the-shell components and libraries. They invite not to trust blindly and explain trust is transitive. They also deal
  with the fact _widely used_ software is _less likely_ to be buggy but without being a certitude. We do not use 
@@ -635,35 +641,35 @@ The other guidelines apply and we will directly talk about how well they are res
 ### Secure the Weakest Link
 
 _Secure the Weakest Link_ theme is, according to the authors of the guidelines[#coding1][] about always targeting the
-imeplemtnation of security features to protect the currently weakest link in the overall security chain. The reasonning
-behind this statement is that attackers will always use the path of the least resistance when attacking a system: for
+implementation of security features to protect the currently weakest link in the overall security chain. The reasonning
+behind this statement is that attackers will always use the path of the least resistance when attacking a system. For
 instance they will not try to break your encryption, they will just try to directly get access to a part of the system
-where the information is stored unencrypted, or get access to the decryptiong key using social engineering for instance.
+where the information is stored unencrypted, or get access to the decryption key using social engineering for instance.
 
-In our case, in the early stage of the imeplementation, the weakest link could have been said to be the "Transaction"
+In our case, in the early stage of the implementation, the weakest link could have been said to be the "Transaction"
 component/class. While the transaction object did do some checks by itself, it was prone to be tampered with (this is a
-Python specific security point: you can tamper with any object if you have access to it). When the time came to review
-the current state of security in the user-to-user trade chain, the first thing we did, instead of trying to add most
-sophisticated checks to the judging party to be able to deal with Transaction objects that would have been tampered
-with, was to actually sort-of _secure_ the Transactions objects. The way we did it was by keeping them in a place where
-the users never actually access them, and instead of passing them a transaction object, pass them a built-in type
-($dict$) that is isolated from the rest of the security chain because we do not reuse it afterwards and it has no
-pointer to any part of the "safe area" of the program nor any other part of the judging party have any link to this
-object after it is passed as a parameter. 
+Python-specific security point: you can tamper with any object if you have access to it). When the time came to review
+the current state of security in the player-to-player trade chain, we could have tried to add more sophisticated checks
+to the judging party, to be able to deal with Transaction objects that would have been tampered with. But instead, the
+first thing we did, was to actually sort-of _secure_ the Transactions objects. The way we did it was by keeping them in
+a place where the players never actually accesses them. Then, instead of passing the players a transaction object, pass
+them a built-in type ($dict$) that is isolated from the rest of the security chain. The isolation is done so that we do
+not reuse the object afterwards and it has no pointers to any part of the "safe area" of the program nor any other part
+of the judging party has any link to this object after it is passed to the player.
 
 ### Practice Defense in Depth [defindepth]
 
-The summary of the _defense in depth_ in the book is that having to consecutive layers of security, that work different
-ways will hopefully allow you to block attackers that made their way through one of them, with the remaining one.
+The summary of the _defense in depth_ in the book is that having two consecutive layers of security, which work
+different ways, will hopefully allow you to block attackers that made their way through one of them, with the remaining
+one.
 
-The analogy is made with a bank. An armed guard should normally be enough to prevent someone from holding up a bank. But,
-some attackers might be numerous enough or armed enough so that the guard cannot stop them.
-
-In this event, having a second layer of security that will, for instance, prevent more than a given amout of money to be
-taken away, because there are additional security requirements to get more than this amount, will likely help. Indeed,
-it will first stop some attackers completely, if they are not tooled enough, for instance break into the vault. Or in
-other cases it will slow them down significantly and thus, potentially give enough time for the first level of security
-breach to be detected and someone to act (in the case of the bank, for the police to come).
+The analogy is made with a bank. An armed guard should normally be enough to prevent someone from holding up a bank.
+But, some attackers might be numerous enough or armed enough so that the guard cannot stop them. In this event, having a
+second layer of security that will, for instance, prevent more than a given amout of money to be taken away, because
+there are additional security requirements to get more than this amount, will likely help. Indeed, it will first stop
+some attackers completely, if they are not tooled enough, for instance to break into the vault. Or in other cases it
+will slow them down significantly and thus, potentially give enough time for the first level of security breach to be
+detected and someone to act (in the case of the bank, for the police to come).
 
 In our case, for instance, this has been applied to transaction validation.
 
@@ -674,7 +680,7 @@ the request, to be the current player id. The cheater will thus need to also gue
 
 In addition to this, even if the cheater bruteforces the system and finds the right current player id, the judging
 party, before validating a transaction that involves a given player, will directly ask the player (direct access, no
-possible impersonation/man-in-the-middle) if she is indeed OK with the transaction (even if she did submit it herelf).
+possible impersonation/man-in-the-middle) if she is indeed OK with the transaction (even if she did submit it herself).
 
 And, assuming the cheater is smart enough to only perform transaction that do not involve the current player, the
 judging party will still ask the current player whether he is OK that the given transaction is applied on her "quota of
@@ -683,28 +689,30 @@ transactions" for the current round.
 The "quota" itself is another "layer" of security. It will prevent a potential attacker that would have found a breach,
 to exploit it too often, thus reducing the overall impact and slowing down the attack.
 
+[TODO: Add something about the password authentication]
+
 ### Fail Securily [failsafe]
 
-The idea behind "fail securely" is not much about something _to do_ but more about things _not to do_. THe basic idea
+The idea behind "fail securely" is not much about something _to do_ but more about things _not to do_. The basic idea
 is: make sure that when you end up in a failure state, you do not fall back to an unsecure mode. Examples are given
 where, for instance when a client and a server software could not find any common authentication protocol, the client
 would simply download a new authentication protocol from the server. Then, a rogue server could simply refuse all the
 protocols a client would currently be compatible with and force the client into downloading a new authentication
 protocol that is in fact a rogue one and will authenticate this server as another secure server.
 
-In our case, such case of unsecure failure could have happene if, for instance, we were to give reasons for transactions
-to be refused.
+In our case, such case of unsecure failure could have happened if, for instance, we were to give _reasons_ for
+transactions to be refused.
 
 More precisely, imagine if, when the "buyer" does not have the sufficient funds, we would return to the "seller" saying
 "the transaction was denied because of a too low balance". We do not give the balance information here, so it seems OK,
-does not it? In fact it is not. Becaue one could simply guess or even bisect (in case the numnber of tries is reduced)
-the balance of the other player by submitting transactions of decreasing amounts (starting a a very high amount), until
-the transaction validates.
+does not it? In fact it is not. Because one could simply guess or even bisect (in case the number of tries is reduced)
+the balance of the other player by submitting transactions of decreasing amounts (starting at a very high amount), until
+the transaction validates or the _reason_ changes.
 
-Having the balance information of another player is both an exploit of the system, as it is not supposed to happen, and
-you the only one with this "power", which makes the game unfair, but it also enables the attacker to trade with more
-sophisticated information, maximizing its profit, and avoiding potentially payment defaults by not selling to players
-that have a too low balance.
+Having the balance information of another player is both an exploit of the system and a sort of cheating. It is an
+exploit because it is not supposed to happen, and you would be the only one with this "power", which makes the game
+unfair. But it also is a sort of cheating as it enables the attacker to trade with more sophisticated information,
+maximizing its profit, and avoiding potentially payment defaults by not selling to players that have a too low balance.
 
 ### Follow the Principle of Least Privilege [leastpriv]
 
@@ -712,16 +720,16 @@ The "least privilege principle" is a reknown paradigm in security, not only in c
 highest level of trust in a person, if you give him or her more privileges than he/she needs, you are putting yourself
 at higher risks than if you did not. Indeed, even if you are giving the key of your house, to feed the pets while you
 are in vacation, to your life-long best friend, the probability that something unwanted happens in your house is not
-nil.
+zero.
 
 That could even be indirectly your friend's fault. He could loose the keys. And if you had isolated your pets into the
-garage and only given the garage's key fo your friend. Then nobody could enter the house. We will by the way see that
-the _compartmentalize_ guideline presented later on makes it easier to apply this principle.
+garage and only given the garage's key to your friend. Then nobody could enter the house (except the garage). We will by
+the way see that the _compartmentalize_ guideline presented later on makes it easier to apply this principle.
 
 In our case, the principle can be applied in many different places.
 
 The first place is for instance the player resources balance. As the player has the starting amount of resources passed
-to him at the beginning of the game, the player does not need to have any additional information about the balances. We
+to him at the beginning of the game, the player does not need to have any additional information about the balance. We
 could have had an access control system in order to allow users to read this information but not write it, but that
 would have been against the principle of the least privilege: here, the players do not need read access to this
 information, so we do not give it to them.
@@ -729,35 +737,40 @@ information, so we do not give it to them.
 Another good example, that follows the analogy of the house, is the ability to call the judging party. One could have
 thought of passing the judging party's object to the players at the beginning. They could then be able to talk to him as
 they have a reference to him. But this is much more privileges than necessary. What do the players need? They need
-access to specific methods of the judging party's object. Then, we only give them access to those specific method: we
-export the methods pointer and give this to the player. So the player has access to the method, not the entire object,
+access to specific methods of the judging party's object. Then, we only give them access to those specific methods: we
+export the methods pointers and give these to the player. So the player has access to the method, not the entire object,
 the same way your friend should only have access to the pet area and not the entire house.
 
 The same principle is applied when asking for agreement over the transactions: what do players need in the end? They do
-not need a Transaction object, they simply need the data that the object is carrying: amount, delays, type of
+not need a Transaction object, they simply need the data that the object is carrying: amounts, delays, type of
 transaction... So we generate a dictionary that contains this data for easy access and the player is only given this.
 
 ### Compartmentalize [compartment]
 
-Compartmentalize is described in the [guidelines][#coding1] as a way to limit the amount of damage that can be dealt to
+Compartmentalize is described in the guidelines[#coding1][] as a way to limit the amount of damage that can be dealt to
 a system when an attacker breaks in. This is in some points similar to [defense in depth][defindepth]. We will also see
 in the next guideline (KISS) that it can be in conflict with it sometimes.
 
-If we take the analogy of the pet-sitter previously described again: so you have decided that you will not give more
-privilege than necessary to the pet-sitter. Thus you want to give him or her only access to an area where your pets are
-confined. Even if your pets are in the garage, if you do not have a separate entrance and lock for the garage, the pet-
-sitter will still need to go through the house in order to get there, thus making it impossible to give him or her only
-the least possible privileges.
+Take the analogy of the pet-sitter previously described again: so you have decided that you will not give more privilege
+than necessary to the pet-sitter. Thus you want to give him or her only access to an area where your pets are confined.
+Even if your pets are in the garage, if you do not have a separate entrance and lock for the garage, the pet-sitter
+will still need to go through the house in order to get there, thus making it impossible to give him or her only the
+least possible privileges.
 
 The basic idea here is to try to break the program down into the smallest viable independant parts. Once this is done,
-it is easier to only give permission to access the parts that it should access and not to the parts that are not
+it is easier to only give permission to access the parts that should be accessed and not to the parts that are not
 supposed to be accessed.
 
-Compartmentalization is only useful if you have multiple roles, though. As if everyone always needs access to all
+Compartmentalization is only useful if you have multiple roles, though. Indeed, if everyone always needs access to all
 compartments anyway, then this does not change much.
 
-This guideline thus does not apply much to our implementation. Indeed the only role we have (of external entities) is
+This guideline thus does not apply much to our implementation. Indeed the only role we have (for external entities) is
 the one of "player". All players need the same access and there is not much compartmentalization that can be done.
+
+[TODO: Review this spacing at the end, when the document is fully finalized]
+<!-- 
+\vspace{3\baselineskip}
+-->
 
 We could, though, maybe consider that for instance, we could have compartmentalized the judging party into several 
 different entities:
@@ -776,24 +789,24 @@ The KISS principle is reknown outside of security too. The KISS principle is mor
 tautology: if you increase the complexity of your program, you increase the risk of bugs. This is pretty obvious, as one
 could argue that bugs have a probability to appear for every line of code.
 
-The guidelines explain that in terms of security, one of ways the KISS principle can manifest itself is into
+The guidelines explain that in terms of security, one of the ways the KISS principle can manifest itself is into
 concentrating security-critical operations in a small number of _choke points_. This will create a small, easily
 controlled interface where everything has to go through. The analogy is performed with a stadium: the more entrances
 there are, the more complicated it gets to perform high quality control on absolutely everyone.
 
 The balance between KISS and compartmentalized/defense in depth is that we should break things down into smaller chunks
-and/or provide several layers of security up to a point where the system still remains simple enough. "simple enough"
-being the hard part to define and unfortunately there is no secret general recipe for that.
+and/or provide several layers of security up to a point where the system still remains simple enough. "Simple enough"
+being the hard part to define and unfortunately there are no secret general recipes for that.
 
 In our implementation the choke point can indeed be considered as the judging party: by having a centralized interface
-through which every user has to go in order to communicate with another user, we avoid the need to control several
+through which every player has to go in order to communicate with another player, we avoid the need to control several
 channels of communication with their own specificities and/or security implications each.
 
-The second part of the KISS principle as described in the guidelines explains how _end users_ should have a simple
-enough secure system because they will not deal with security themselves. We are not really concerned about this part
-though as we do not really have any users but we could argue that we have only attackers: indeed, the goal of the
-players is to win the game and, cheating is one of the ways to achieve that, thus, one of the actions players should try
-to perform is cheating.
+The second part of the KISS principle as described in the guidelines explains how _end users_ (human beings) should have
+a simple enough secure system because they will not deal with security themselves. We are not really concerned about
+this part though as we do not really have any users but we could argue that we have only attackers: indeed, the goal of
+the players is to win the game and, cheating is one of the ways to achieve that, thus, one of the actions players should
+try to perform is cheating.
 
 
 # Future work: Game complexification
