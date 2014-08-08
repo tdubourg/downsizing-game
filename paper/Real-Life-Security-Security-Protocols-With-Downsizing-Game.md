@@ -59,8 +59,8 @@ Two players can make transactions between each other in order to trade every sor
 game:  Money, trust, loyalty, and votes.
 
 The game is overseen by a _judging party_, also called _game master_. Its role in the original game is to make sure that
-nobody is cheating and everything in the game happens according to the game's rules. {TODO: CHECK EXACTLY WHAT IT DOES IN
-THE MANGA}
+nobody is cheating and everything in the game happens according to the game's rules. He validates transactions and he
+applies fines equal to the amount of the starting money when players to not respect their transactions.
 
 We will describe the exact instance of the game that we will use (with variations in the rules) in details in
 [][gamerules].
@@ -528,25 +528,59 @@ Where $round$ is the function that rounds a real number to the closest integer.
 
 ### Python-related security measures
 
-As _final_ objects do not exist in Python, we have to make sure critical objects are not accessible by the players.
+#### Objects Tampering
 
-For instance, the judging party object is not passed to the players, only pointers to its methods. Thus, players can still
-call methods of the judging party but cannot override any attribute of the judging party's instance, like resources balances,
-for instance.
+As _final_ objects do not really exist in Python, we have to make sure critical objects are not accessible by the
+players.
 
-Another example is transactions objects. Transactions are instantiated by the player and passed to the judge. A player could
-try to change the transaction object between it is validated and applied, thus making the transaction applied without having
-been checked on the attributes values it holds when it is applied.
+For instance, the judging party object is not passed to the players, only pointers to its methods. Thus, players can
+still call methods of the judging party but cannot override any attribute of the judging party's instance, like
+resources balances, for instance.
 
-In order to mitigate this, we make a copy of the transaction passed by the player. The player thus do not have a pointer to
-the object we are going to use anymore. We can then validate and apply the transaction without risks of tampering. The same
-process is used when passing transactions as a parameter at the step of "player agreement" check (where we check the player
-agrees with the currently being validated transaction).
+Another example is transactions objects. Transactions are instantiated by the player and passed to the judge. A player
+could try to change the transaction object's attributes between it is validated and applied, thus making the transaction
+applied without having been checked on the attributes values it holds when it is applied.
 
-{TODO: UPDATE: Classes are modifiable too, so we should not provide access to the transactions at ALL. Also, no import is allowed, so that they do not use inspection tools to trigger code execution
-ALSO, they are in the own thread to make sure we can kill them and continue the game and they will not be able to hold the CPU forever}
+In order to mitigate this, at first we thought we would make a copy of the transaction passed by the player. The player
+thus do not have a pointer to the object we are going to use anymore. We could then validate and apply the transaction
+without risks of tampering. The same process would used when passing transactions as a parameter at the step of "player
+agreement" check (where we check the player agrees with the currently being validated transaction).
 
-{TODO: ADD SOMETHING ABOUT CHECKING THE NUMBER OF ROUNDS LEFT TO PREVENT PLAYERS FROM CHEATING WHEN IT IS THE LAST ROUND BY SUBMITTING A BIDIRECTIONAL TRANSACTION THAT WOULD ONLY BE EXECUTED HALF WAY}
+Unfortunately, in Python, classes are also changeable. If the player gets a object of class A, he would in fact be able
+to change the A classe's methods, assigning them to another player-made function, for instance. Why one would think such
+changes would be local to the module, they are applied process-wide. Thus, passing the Transaction object to the player
+is not possible at all unless we have a run-time enforcer that sets all methods back to the original functions before
+critical operations on Transactions. As a consequence we finally decided to go for the other solution, that is to say
+not to pass to the player the Transaction object. Instead, we group the necessary information for the player to be able
+to agree or not upon a transaction using the built-in _dictionary_ type for easy access from the player, and we do not
+reuse this object not make any relationship from or to it from the "safe area" of the program (the judging party).
+
+#### Threading and Process Memory Tampering
+
+Another threat is that the player would spawn threads that would then be used to launch itself again while it is not its
+turn or trying to bruteforce CPU preemption to try to make a player's turn infinite.
+
+At the same time, some tools are also available in the Python library that allows code memory inspection of the current
+running process and could lead to forcing the program into jumping to an arbitrary line of code.
+
+After careful thought about these two issues, we decided that players' code should not need any _import_ statement in
+order to function properly. Thus, we will forbid _import_ statement and at the same time access to any native library
+or python built-in libraries to the players' code. A pre-processing could be applied on players' code that would either
+automatically remove import statements or simply refuse the code's submission if it finds import statement.
+
+Standard Python, without using native extensions (additional ones or Python standard library's ones) does not allow
+tampering with memory nor threading and thus we wil avoid those two issues.
+
+### Implementation-specific security measures (not Python-specific)
+
+As we decided to run all code in the same process, the players' code could run forever, never giving back the CPU to the
+game's main control code. In order to avoid that, we simply spawn a thread and move the players' code execution to this
+thread just before every player turn. After a given timeout (the maximum time a player is allowed to play as defined by
+the rules), the main process will simply kill the running thread if it is still running, and also consider the player
+as a cheater.
+
+{TODO: ADD SOMETHING ABOUT CHECKING THE NUMBER OF ROUNDS LEFT TO PREVENT PLAYERS FROM CHEATING WHEN IT IS THE LAST ROUND
+{BY SUBMITTING A BIDIRECTIONAL TRANSACTION THAT WOULD ONLY BE EXECUTED HALF WAY}
 
 ## Implementation of the game / game execution flow
 
@@ -621,8 +655,9 @@ The complete list of guidelines themes[#coding1][] is the following:
 We believe the following guidelines do not apply (or not completely) in our case:
 
 - "KISS": The KISS chapter of the guidelines is separated between how the _program itself_ should be simple and how it
-should be simple _for the end user_. The _end user_ part of it is not really relevant for us as we do not really have
-_users_ but more _potential attackers_ that are the players. We will thus only review the part about the _program itself_
+should be simple _for the end user_ (human being). The _end user_ part of it is not really relevant for us as we do not
+really have _users_ but more _potential attackers_ that are the players. We will thus only review the part about the
+_program itself_.
 
 - "Promote Privacy": This chapter is directly related to _end users_ and even more to _human beings_, it does not apply
 to our  implementaiton that has Python AI code as _end user_.
