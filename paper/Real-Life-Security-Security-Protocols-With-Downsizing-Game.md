@@ -612,9 +612,9 @@ as a cheater.
 
 ## Global overview of the game's organization
 
-
-Below is presented a gloval overview of the game. The game first initializes (cf. [_Game Initialization_][codegameinit] for more details). The game then calls the judging party and the latter is responsible for
-asking the players to actually play.
+Below is presented a gloval overview of the game. The game first initializes (cf. [_Game Initialization_][codegameinit]
+for more details). The game then calls the judging party and the latter is responsible for asking the players to
+actually play.
 
 ![Global Flowchart][]
 
