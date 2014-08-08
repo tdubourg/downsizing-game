@@ -230,7 +230,7 @@ A cheater is a player that breaks one or several game's rules. Cheaters must be 
 from the game. Banned players cannot participate in the game anymore. As such, they will not be able to use the game
 again to purge their debt if they have some.
 
-#### Transactions
+#### Transactions [transacdef]
 
 A _transaction_ is one or multiple transfer(s) of _fixed amounts_ of resources between two _identified/authenticated_
 (see [][playerauth]) players. The player _sending_ the resource will later be referred to either as the _sending player_
@@ -524,6 +524,32 @@ $$part\ of\ the\ remaining\ balance\ you\ get = round\left(\cfrac{total\ amount\
 
 Where $round$ is the function that rounds a real number to the closest integer.
 
+### Last round's additional bound check
+
+We stated in [][roundsdef] that a "round" passes everytime a _transaction_ is applied. We also defined in [][transacdef]
+that _bidirectional_ transaction were composed of two _unidirectional_ transactions, thus making _bidirectional_
+transactions effectively ticking the "rounds clock" twice.
+
+Now let us call $MAX$ the maximum round, that ends the game when reached. This means that when we are at round $MAX-1$,
+we need an additional bound check for _bidirectional_ transactions, or more simply put, we should not allow
+_bidirectional_ transactions if the round's number is strictly higher than $MAX-2$.
+
+Indeed, if we were to allow it, it would allow the last playing player to cheat the game in the following way:
+
+1. Create a bidirectional transaction with other player X
+
+2. Proposes to buy a high amount of score for all the money you have left
+
+3. The other player is likely to accept as it is the last round anyway and everything is more or less decided in terms
+of score.
+
+4. The first part of the _bidirectional_ transaction is applied, you get the score points.
+
+5. Then the maximum round number is reached, the game is over, and you have not paid back the other player!
+
+This, obviously, is a form of cheating and thus will be prevented by not allowing bidirectional transaciton if the
+current round number is $> MAX - 2$
+
 ## Miscellaneous security measures
 
 ### Python-related security measures
@@ -543,17 +569,20 @@ applied without having been checked on the attributes values it holds when it is
 
 In order to mitigate this, at first we thought we would make a copy of the transaction passed by the player. The player
 thus do not have a pointer to the object we are going to use anymore. We could then validate and apply the transaction
-without risks of tampering. The same process would used when passing transactions as a parameter at the step of "player
-agreement" check (where we check the player agrees with the currently being validated transaction).
+without risks of tampering. The same process would be used when passing transactions as a parameter at the step of
+"player agreement" check (where we check the player agrees with the currently being validated transaction).
 
-Unfortunately, in Python, classes are also changeable. If the player gets a object of class A, he would in fact be able
-to change the A classe's methods, assigning them to another player-made function, for instance. Why one would think such
+Unfortunately, in Python, classes are also changeable. If the player gets an object of class A, he would in fact be able
+to change the A class' methods, assigning them to another player-made function, for instance. While one would think such
 changes would be local to the module, they are applied process-wide. Thus, passing the Transaction object to the player
 is not possible at all unless we have a run-time enforcer that sets all methods back to the original functions before
-critical operations on Transactions. As a consequence we finally decided to go for the other solution, that is to say
-not to pass to the player the Transaction object. Instead, we group the necessary information for the player to be able
-to agree or not upon a transaction using the built-in _dictionary_ type for easy access from the player, and we do not
-reuse this object not make any relationship from or to it from the "safe area" of the program (the judging party).
+critical operations on Transactions. But this means additional code complexity, and also, players do not really need
+access to full-blown Transaction object in the end. They just need to be able to set transactions with _amounts_,
+_delays_ and _target players_. As a consequence, and following the [_principle of the least privilege_][leastpriv] we
+finally decided to go for the other solution, that is to say not to pass to the player the Transaction object. Instead,
+we group the necessary information for the player to be able to agree or not upon a transaction using the built-in
+_dictionary_ type for easy access from the player, and we do not reuse this object nor make any relationship from or to
+it from the "safe area" of the program (the judging party).
 
 #### Threading and Process Memory Tampering
 
@@ -578,9 +607,6 @@ game's main control code. In order to avoid that, we simply spawn a thread and m
 thread just before every player turn. After a given timeout (the maximum time a player is allowed to play as defined by
 the rules), the main process will simply kill the running thread if it is still running, and also consider the player
 as a cheater.
-
-{TODO: ADD SOMETHING ABOUT CHECKING THE NUMBER OF ROUNDS LEFT TO PREVENT PLAYERS FROM CHEATING WHEN IT IS THE LAST ROUND
-{BY SUBMITTING A BIDIRECTIONAL TRANSACTION THAT WOULD ONLY BE EXECUTED HALF WAY}
 
 ## Implementation of the game / game execution flow
 
