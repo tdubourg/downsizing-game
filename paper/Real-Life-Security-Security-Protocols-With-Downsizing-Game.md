@@ -13,20 +13,6 @@ latex input:        mmd-article-begin-doc
 \begin{abstract}
 --> 
 
-TODO implementation:
-
-- Add the check with the current player even if the current player is not being involved, so that no one else than the
-current player really can make transactions at her turn (check for "being allowed to run this transaction on your quota")
-- Add passwords checks
-
-TODO: Remarks during the presentation
-
-- Make relations with real-life scenario cases?/examples
-- Goal of the work was unclear
-- Idea to fix the two previous: maybe a system diagram with arrows pointing at parts of the system
-and with names of the security concerns that arise on this part of the system (that would be described later
-in the paper)
-
 Real life security use cases often include multiple parties talking to each other and making basic contracts between each  other. A
 contract can take several forms: A contract between two programs about how they are going to communicate,  a contract  between two
 business men about a deal between their respective companies,  etc. .  In this paper, we are going to focus on contracts that can be
@@ -274,6 +260,15 @@ Voting promises are a type of delayed transactions. Voting promises are promises
 number of votes to the _recipient_ of the transaction before a given absolute game's time unit (because it's a delayed
 transaction).
 
+#### Voting Transactions [votingtrans]
+
+Voting transactions are _unidirectional_ transactions. Voting transactions can only be instantiated by the judging
+party. The judging party will instantiate a _voting transaction_ for every valid vote during a 
+[_voting round_][votingrounds]. And will apply them all at the end of the voting round.
+
+Voting transactions are a mechanism that will allow to check for the fulfillment of _voting promises transactions_. The 
+details will be presented in with the [transactions validation details][transacvalidation].
+
 #### Valid transaction 
 
 A _transaction_ is said to be _valid_ if and only if: 
@@ -374,6 +369,13 @@ This way, we do not need any access control mechanism for the players, they do n
 In order to allow only the current player to access the judging party and make call to it, we will simply keep track of the current player in the judging party and every judging party's interface function will check whether the calling player is the current player or not and immediately abort if not. Player [authentication][playerauth] guarantees that another player cannot submit 
 transactions by using the _current player_ as the origin of the transaction.
 
+### Transaction History Log [transaclog]
+
+In order to keep track of every transaction that happened in the game (and to allow for [_completion
+check_][schedtranscompletionimpl]), the judging party will keep updated a transaction _transaction history_ log. This
+log will contain absolutely all transactions that have been _validated_ by the judging party together with the round
+number they were validated at.
+
 ### Immediate transactions: guaranteeing "immediateness" (atomicity) [immatomimpl]
 As explained in [][immatom], even with the stated [assumptions][Assumptions], there is still room for a race-condition.
 
@@ -381,7 +383,7 @@ To avoid this, we will make use of synchronization tools to only allow one concu
 party program's code of validation and application of an immediate transaction. This can be materialized for instance by the use of
 operating system's _mutex_ tools, but any other synchronization tool providing equal guarantees can be used too.
 
-### Delayed/scheduled transactions completion [schedtranscompletionimpl]
+### Delayed/scheduled Transactions Completion Check [schedtranscompletionimpl]
 
 When the game's clock ticks to this absolute time unit (the deadline), it will tell the judge that there is some delayed transactions that
 should be checked for having been completed. The judging party will then check if the transactions have been completed by the
@@ -390,7 +392,7 @@ performed **before any other action** can be taken in the current round. If the 
 resources did not transfer the exact amount of resources it was supposed to, this player will be considered a cheater.
 
 Note that in order to guarantee that the current player is not able to talk to the judging party before the end of the
-delayed transactions checks, we will once more make use of synchronization tools, as in the case of  immediate transactions
+delayed transactions checks, we will once more make use of synchronization tools, as in the case of immediate transactions
 [atomicity][immatom].
 
 But in order to be able to tell the difference between transfers of resources related to new deals between two players and
@@ -407,6 +409,15 @@ subtransactions that were made since the round of the delayed transaction betwee
 up. The sum has to be **exactly** what was initially agreed in the delayed transaction. If and only if it is the case, 
 then the transaction can be marked as completed.
 
+#### Voting Promises Completion Check [votingpromisescomplcheck]
+
+_Voting promises_, as defined in [][votepromtrans], are _delayed transactions_ as well. They thus need to be checked for
+completion too. These transactions will be part of the "transaction to be checked" that will be given to the judging
+party at the very beginning of a round (the round that is the transaction's deadline). When the judging party is given a
+_voting transaction_, it will not look for _subtransactions_ in order to check that the amount of _votes_ was
+transferred but will look for _voting transactions_. _Voting transactions_ mechanism is presented in details in
+[][voting].
+
 ### Players authentication [playerauthimpl]
 
 To authenticate the player, we will go for the simple use of a password. At the beginning of the game, every player will be
@@ -416,7 +427,7 @@ to prove this call is coming from the player it is said it comes from.
 When the judging party calls players itself, the authentication is assured as the judging party has direct pointers to every
 players and those pointers cannot be tampered by the other players (as [per assumption 3][Assumptions])
 
-### Transactions validation
+### Transactions validation [transacvalidation]
 
 When asked to perform a new transaction, the judging party will sequentially (in the order below) go through multiples steps, or checks.
 
@@ -461,20 +472,20 @@ It should be noted that, as delayed transactions are validated at the beginning 
 a non playable round, will be added at the end of the game for the purpose of validating the delayed transaction whose deadline
 was the last round (excluding the additional virtual round).
 
-As the game has 1,000 [rounds][gamerules], this round could be considered as the 1,001^st round.
+As the game has $1,000$ [rounds][gamerules], this round could be considered as the $1,001^{st}$ round.
 
 ### Casting votes aka _voting transactions_ [voting]
 
-Casting votes is done (by the players) by returning, on the call of the judging party, a special transaction. We will call 
+Casting votes is done (by the players) by instantiating, on the call of the judging party, a special transaction. We will call 
 this type of special transaction _Voting Transaction_.
 
-A voting transaction is an _immediate transaction_ where the resource type is always _votes_. The _payer_ is the player
-casting the vote and the _payee_ is the player whose score will be increased by this vote, ie. the player "receiving" the
-vote.
+A voting transaction is an _immediate unidirectional transaction_ where the resource type is always _votes_. The _payer_
+is the player casting the vote and the _payee_ is the player whose score will be increased by this vote, ie. the player
+"receiving" the vote.
 
-If the vote casting has to been linked to a delayed transaction in progress, the same process as for any other delayed
-transaction will be applied: A "subtransaction" of type _Voting Subtransaction_ will be used. See [][schedtranscompletion]
-for more details on _subtransactions_.
+_Voting transactions_ are created _under the hood_ by the judging party when a vote is casted and players to not have to
+make an explicit call to create a transaction of this type. Transactions of this type, as [previously said][votingtrans]
+cannot be asked to be instantiated by players.
 
 <!-- 
 \vspace{1\baselineskip}
@@ -640,8 +651,7 @@ The pseudo-code of a non-voting round is located in the [appendix][coderound]
 -->
 
 ### Voting round
-{TODO: Check that the TODO on the next line has not already been resolved...}
-{TODO: EXPLAIN HOW WE REGISTER VOTES AS SPECIAL TRANSACTIONS THAT ARE THEN USED TO CHECK FOR FULFILMENT OF VOTING PROMISES}
+{TODO: Add the pseudo-code?}
 The pseudo-code of a non-voting round will be added in the final version of the paper.
 
 ![Voting Round Sequence Diagram][]
