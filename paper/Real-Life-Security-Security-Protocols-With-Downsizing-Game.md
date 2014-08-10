@@ -589,7 +589,7 @@ current round number is $> MAX - 2$
 
 ### Python-related security measures
 
-#### Objects Tampering
+#### Objects Tampering [objtamper]
 
 As _final_ objects do not really exist in Python, we have to make sure critical objects are not accessible by the
 players.
@@ -661,6 +661,7 @@ actually play.
 
 [](#seqdiaground) is the sequence diagram of a round. 
 The pseudo-code of a non-voting round is located in the [appendix][coderound]
+{TODO: Update the sequence diagram so that we do not pass the transaction object at all}
 
 ![Non-voting Round Sequence Diagram][seqdiaground]
 
@@ -670,6 +671,7 @@ The pseudo-code of a non-voting round is located in the [appendix][coderound]
 
 [](#seqdiagvotinground) presents the sequence diagram of a voting round. 
 {TODO: Add the pseudo-code?}
+{TODO: Update the sequence diagram so that we do not pass the transaction object at all}
 The pseudo-code of a voting round will be added in the final version of the paper.
 
 ![Voting Round Sequence Diagram][seqdiagvotinground]
@@ -718,7 +720,7 @@ to our  implementaiton that has Python AI code as _end user_.
 
 - "Remember That Hiding Secrets Is Hard": Our program is both OpenSource and not compiled. Moreover, we do not use any
 secret-based technique like serial or private key or seed. Moreover, this guideline is mostly about commercial-related
-activites, protecting data that belongs to someone, etc. which is not really our case.
+activities, protecting data that belongs to someone, etc. which is not really our case.
 
 - "Be Reluctant To Trust" & "Use Your Community Resources": Those two chapters of the guidelines are entirely focused on 
 off-the-shell components and libraries. They invite not to trust blindly and explain trust is transitive. They also deal
@@ -737,7 +739,7 @@ where the information is stored unencrypted, or get access to the decryption key
 
 In our case, in the early stage of the implementation, the weakest link could have been said to be the "Transaction"
 component/class. While the transaction object did do some checks by itself, it was prone to be tampered with (this is a
-Python-specific security point: you can tamper with any object if you have access to it). When the time came to review
+[Python-specific security point][objtamper]). When the time came to review
 the current state of security in the player-to-player trade chain, we could have tried to add more sophisticated checks
 to the judging party, to be able to deal with Transaction objects that would have been tampered with. But instead, the
 first thing we did, was to actually sort-of _secure_ the Transactions objects. The way we did it was by keeping them in
@@ -778,7 +780,8 @@ transactions" for the current round.
 The "quota" itself is another "layer" of security. It will prevent a potential attacker that would have found a breach,
 to exploit it too often, thus reducing the overall impact and slowing down the attack.
 
-[TODO: Add something about the password authentication]
+And last, players are also authenticated using a password. Thus, once the cheater has figured out what player _id_ is
+the one of the current player, he then also has to guess its password.
 
 ### Fail Securily [failsafe]
 
@@ -792,11 +795,11 @@ protocol that is in fact a rogue one and will authenticate this server as anothe
 In our case, such case of unsecure failure could have happened if, for instance, we were to give _reasons_ for
 transactions to be refused.
 
-More precisely, imagine if, when the "buyer" does not have the sufficient funds, we would return to the "seller" saying
-"the transaction was denied because of a too low balance". We do not give the balance information here, so it seems OK,
-does not it? In fact it is not. Because one could simply guess or even bisect (in case the number of tries is reduced)
-the balance of the other player by submitting transactions of decreasing amounts (starting at a very high amount), until
-the transaction validates or the _reason_ changes.
+More precisely, imagine if, when the "buyer" does not have the sufficient funds, we were to return to the "seller"
+saying "the transaction was denied because of a too low balance". We do not give the balance information here, so it
+seems OK, does not it? In fact it is not. Because one could simply guess or even bisect (in case the number of tries is
+reduced) the balance of the other player by submitting transactions of decreasing amounts (starting at a very high
+amount), until the transaction validates or the _reason_ changes.
 
 Having the balance information of another player is both an exploit of the system and a sort of cheating. It is an
 exploit because it is not supposed to happen, and you would be the only one with this "power", which makes the game
@@ -856,11 +859,6 @@ compartments anyway, then this does not change much.
 This guideline thus does not apply much to our implementation. Indeed the only role we have (for external entities) is
 the one of "player". All players need the same access and there is not much compartmentalization that can be done.
 
-[TODO: Review this spacing at the end, when the document is fully finalized]
-<!-- 
-\vspace{3\baselineskip}
--->
-
 We could, though, maybe consider that for instance, we could have compartmentalized the judging party into several 
 different entities:
 
@@ -911,16 +909,7 @@ the cancelling of the "contract". As any other transaction, both players would n
 simply _discard_ the remaining open delayed transaction upon applying the _cancellation transaction_.
 - Give players an interface to declare the tradable resources they have to the judging party. It would allow to model real life 
 trade where businesses might have exclusive resources that they are alone to possess, compared to everyone trading the same resources.
-- Introducting loyalty and trust "resources".
-
-The same way as for the guidelines, if we get additional time we will look into those issues first. 
-
-<!-- 
-\vspace{1\baselineskip}
- -->
-
-**If the reviewers have suggestions** of complexifications that they think would be of higher priority they are welcomed to include
-those suggestions in the review comments.
+- Introducing loyalty and trust "resources".
 
 # Appendix
 
