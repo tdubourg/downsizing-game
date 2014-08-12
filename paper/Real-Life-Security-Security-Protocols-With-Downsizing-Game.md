@@ -931,7 +931,7 @@ trade where businesses might have exclusive resources that they are alone to pos
 
     Judge::play_round
         if clock.is_voting_round():
-            return player_voting_round()
+            return play_voting_round()
 
         for pid in game.players_ids:
             p = players[pid]
