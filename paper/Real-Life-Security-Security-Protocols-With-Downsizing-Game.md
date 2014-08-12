@@ -661,7 +661,6 @@ actually play.
 
 [](#seqdiaground) is the sequence diagram of a round. 
 The pseudo-code of a non-voting round is located in the [appendix][coderound]
-{TODO: Update the sequence diagram so that we do not pass the transaction object at all}
 
 ![Non-voting Round Sequence Diagram][seqdiaground]
 
@@ -670,8 +669,7 @@ The pseudo-code of a non-voting round is located in the [appendix][coderound]
 ### Voting round
 
 [](#seqdiagvotinground) presents the sequence diagram of a voting round. 
-{TODO: Add the pseudo-code?}
-The pseudo-code of a voting round will be added in the final version of the paper.
+The pseudo-code of a voting round is presented in the [appendix][codevotinground].
 
 ![Voting Round Sequence Diagram][seqdiagvotinground]
 
@@ -926,12 +924,15 @@ trade where businesses might have exclusive resources that they are alone to pos
         judge.setPlayers(players)
 
 
-### Pseudo-code of a round [coderound]
+### Pseudo-code of a non-voting round [coderound]
     Game::play
         while judge.play_round():
             pass
 
     Judge::play_round
+        if clock.is_voting_round():
+            return player_voting_round()
+
         for pid in game.players_ids:
             p = players[pid]
             try:
@@ -939,11 +940,36 @@ trade where businesses might have exclusive resources that they are alone to pos
                 p.play_round()
             except PlayerBannedException as e:
                 game.loser = e.player
-                return False
             clock.tick()
             if clock.is_over():
                 return False
             return True
+
+### Pseudo-code of a voting round [codevotinground]
+    Judge::play_voting_round
+        votes_to_be_applied = list()
+        try:
+            for pid in game.players_ids:
+                current_pid = pid
+                p = players[pid]
+                player_votes_list = p.please_vote()
+                for player_id in player_votes_list:
+                    t = create_voting_transaction(current_pid, player_id)
+                    if not t.is_valid():
+                        raise PlayerBannedException(
+                            "Player voted incorrectly.",
+                            player=current_pid
+                        )
+                    else:
+                        votes_to_be_applied.append(t)
+        except PlayerBannedException as e:
+            game.loser = e.player
+        for voting_transaction in votes_to_be_applied:
+            voting_transaction.apply(players_scores_accounts)
+        clock.tick()
+        if clock.is_over():
+            return False
+        return True
 
 <!-- 
 \begin{thebibliography}{1} % Note: This is non-sense but I have to keep this {1} for it to work, any other parameter will screw something up
