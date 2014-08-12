@@ -665,7 +665,7 @@ The pseudo-code of a non-voting round is located in the [appendix][coderound]
 
 ![Non-voting Round Sequence Diagram][seqdiaground]
 
-[seqdiaground]: round_seq_diagram.png
+[seqdiaground]: round_seq_diagram.png width=425px height=567px
 
 ### Voting round
 

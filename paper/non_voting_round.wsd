@@ -1,0 +1,51 @@
+title Non-voting round: Transaction validation and application process
+
+participant Player as P
+participant Judge as J
+participant Transaction as T
+
+loop for each player
+	J->P: play(interface: [function1, function2, function3])
+	note right of P:
+		Player makes some decisions 
+	    and prepares some transactions
+	end note
+	note right of J:
+		The player directly sends the parameters
+		of the transaction, but the Judge will
+		instantiate it himself
+	end note
+
+	P->+J: make_transaction(id1, id2, amount[, delay, amount2, delay2])
+	J->J: create_transaction(id1, id2, amount[, delay, amount2, delay2])
+	J->+T: is_valid(judge)?
+	T->+J: ask_agreement_to(id1)
+	note left of J
+		Here the judge extract the useful/needed
+		information for the player to be able
+		to agree/disagree with the transaction
+		but does not pass the transaction object.
+	end note
+	J->+P: transaction_agreement({dict of info})
+	P->-J: yes/no
+	J-->-T: yes/no
+	T->J: ask_agreement_to(id2)
+	note left of J
+		Same process, but we do not reuse the
+		previous dict. object as it could have
+		been tampered with.
+	end note
+	J->+P: transaction_agreement({dict of info})
+	P->-J: yes/no
+	J-->-T: yes/no
+	T-->+J: player_resources info?
+	J-->-T: player resources info
+	T-->-J: (Yes/No)
+	alt transaction was valid
+		J->+T: apply(pointer to resources)
+		T->-J: Done
+		J-->-P: transaction was applied
+	else was invalid
+		J-->-P: transaction was denied
+	end
+end loop
