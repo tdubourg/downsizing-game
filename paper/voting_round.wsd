@@ -1,0 +1,26 @@
+title Voting round: Votes casting and voting transaction validation.
+
+participant Player as P
+participant Judge as J
+participant VotingTransaction as T
+
+loop for each player
+	J->+P: get_votes()
+	P->-J: list of player ids of length 1
+	loop for player_id in the list
+		J->J: create_voting_transaction(id1, id2)
+		J->+T: is_valid(judge)?
+		alt transaction was valid
+			J->T: Add to ListOfVotesToApply
+		else was invalid
+			J-->J: mark_as_cheater(player)
+		end
+	end
+end
+loop for player_id in the ListOfVotesToApply
+	J->T: apply(pointer to resources accounts)
+end
+
+loop for each player
+	J->P: new_scores(list of {player_id: score})
+end

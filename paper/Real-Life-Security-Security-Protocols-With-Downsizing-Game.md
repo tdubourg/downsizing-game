@@ -671,12 +671,11 @@ The pseudo-code of a non-voting round is located in the [appendix][coderound]
 
 [](#seqdiagvotinground) presents the sequence diagram of a voting round. 
 {TODO: Add the pseudo-code?}
-{TODO: Update the sequence diagram so that we do not pass the transaction object at all}
 The pseudo-code of a voting round will be added in the final version of the paper.
 
 ![Voting Round Sequence Diagram][seqdiagvotinground]
 
-[seqdiagvotinground]: voting_round_seq_diagram.png
+[seqdiagvotinground]: voting_round_seq_diagram.png width=430px height=430px
 
 <!-- 
 \clearpage
