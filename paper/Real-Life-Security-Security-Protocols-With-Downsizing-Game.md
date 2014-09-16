@@ -168,7 +168,7 @@ of the game, as she will keep the remainder of the money after giving back the o
 ### Definitions & needed features
 
 #### Judging party [judge]
-The judging party is a neutral (not affiliated with any player) entity whose responsability is to maintain order in the
+The judging party is a neutral (not affiliated with any player) entity whose responsibility is to maintain order in the
 game and make sure nobody is able to cheat and that, to the extent of its knowledge, every transaction is valid.
 
 #### Current player
@@ -499,7 +499,7 @@ such an additional virtual round is not needed.
 ### Casting votes aka _voting transactions_ [voting]
 
 Casting votes is done (by the players), when asked by the judging party, by calling a special method of the judging
-party. This judging party's method, that is only allowed to be called during voting rounds and just after the juding party
+party. This judging party's method, that is only allowed to be called during voting rounds and just after the judging party
 has called the player to cast vote, will create a special type of transaction: _Voting Transaction_.
 
 A voting transaction is an _immediate unidirectional transaction_ where the resource type is always _votes_. The _payer_
@@ -521,7 +521,7 @@ However, we finally decided to transform every vote casting into a transaction s
 action in the game as a transaction, allowing for logging,  replay and potential error-recovery, but that also allows
 more flexible voting promises transactions to be created. Indeed, with our  implementation, a player can tell another
 player "OK, I will for sure vote for you $X$ times before the round $r$, but I get to  decide when". Such transactions,
-in a real world environment, are very important because it allows to add some preassure to some  other  player for
+in a real world environment, are very important because it allows to add some pressure to some  other  player for
 instance, and not to reveal one's true voting agreement too early, while still having strong voting agreements. We
 believe suchs advantages are better than the sole advantage of having the judging party do it instead of the player,
 that would  prevent the player from cheating. It is to be also noted that this model allows more easily the
@@ -535,7 +535,7 @@ Players should vote immediately, no delay is given. Players should vote accordin
 official vote promise agreement they made via a transaction.
 
 The judging party, for every player's vote, will check that it respects the rules, and will then check that it respects
-vote promises that have been registered via previous transaction. To summarise, a voting round goes through the
+vote promises that have been registered via previous transaction. To summarize, a voting round goes through the
 following steps, in order:
 
 1. Check for scheduled transaction completeness, as for any round.
@@ -561,7 +561,7 @@ Where $round$ is the function that rounds a real number to the closest integer.
 
 ### Last round's additional bound check
 
-We stated in [][roundsdef] that a "round" passes everytime a _transaction_ is applied. We also defined in [][transacdef]
+We stated in [][roundsdef] that a "round" passes every time a _transaction_ is applied. We also defined in [][transacdef]
 that _bidirectional_ transaction were composed of two _unidirectional_ transactions, thus making _bidirectional_
 transactions effectively ticking the "rounds clock" twice.
 
@@ -633,7 +633,7 @@ or python built-in libraries to the players' code. A pre-processing could be app
 automatically remove _import_ statements or simply refuse the code's submission if it finds an _import_ statement.
 
 Standard Python, without using native extensions (additional ones or Python standard library's ones) does not allow
-tampering with memory nor threading and thus we wil avoid those two issues.
+tampering with memory nor threading and thus we will avoid those two issues.
 
 ### Implementation-specific security measures (not Python-specific)
 
@@ -713,7 +713,7 @@ really have _users_ but more _potential attackers_ that are the players. We will
 _program itself_.
 
 - "Promote Privacy": This chapter is directly related to _end users_ and even more to _human beings_, it does not apply
-to our  implementaiton that has Python AI code as _end user_.
+to our implementation that has Python AI code as _end user_.
 
 - "Remember That Hiding Secrets Is Hard": Our program is both OpenSource and not compiled. Moreover, we do not use any
 secret-based technique like serial or private key or seed. Moreover, this guideline is mostly about commercial-related
@@ -729,7 +729,7 @@ The other guidelines apply and we will directly talk about how well they are res
 ### Secure the Weakest Link
 
 _Secure the Weakest Link_ theme is, according to the authors of the guidelines[#coding1][] about always targeting the
-implementation of security features to protect the currently weakest link in the overall security chain. The reasonning
+implementation of security features to protect the currently weakest link in the overall security chain. The reasoning
 behind this statement is that attackers will always use the path of the least resistance when attacking a system. For
 instance they will not try to break your encryption, they will just try to directly get access to a part of the system
 where the information is stored unencrypted, or get access to the decryption key using social engineering for instance.
@@ -753,7 +753,7 @@ one.
 
 The analogy is made with a bank. An armed guard should normally be enough to prevent someone from holding up a bank.
 But, some attackers might be numerous enough or armed enough so that the guard cannot stop them. In this event, having a
-second layer of security that will, for instance, prevent more than a given amout of money to be taken away, because
+second layer of security that will, for instance, prevent more than a given amount of money to be taken away, because
 there are additional security requirements to get more than this amount, will likely help. Indeed, it will first stop
 some attackers completely, if they are not tooled enough, for instance to break into the vault. Or in other cases it
 will slow them down significantly and thus, potentially give enough time for the first level of security breach to be
@@ -783,13 +783,13 @@ the one of the current player, he then also has to guess its password.
 ### Fail Securily [failsafe]
 
 The idea behind "fail securely" is not much about something _to do_ but more about things _not to do_. The basic idea
-is: make sure that when you end up in a failure state, you do not fall back to an unsecure mode. Examples are given
+is: make sure that when you end up in a failure state, you do not fall back to an insecure mode. Examples are given
 where, for instance when a client and a server software could not find any common authentication protocol, the client
 would simply download a new authentication protocol from the server. Then, a rogue server could simply refuse all the
 protocols a client would currently be compatible with and force the client into downloading a new authentication
 protocol that is in fact a rogue one and will authenticate this server as another secure server.
 
-In our case, such case of unsecure failure could have happened if, for instance, we were to give _reasons_ for
+In our case, such case of insecure failure could have happened if, for instance, we were to give _reasons_ for
 transactions to be refused.
 
 More precisely, imagine if, when the "buyer" does not have the sufficient funds, we were to return to the "seller"
@@ -805,7 +805,7 @@ maximizing its profit, and avoiding potentially payment defaults by not selling 
 
 ### Follow the Principle of Least Privilege [leastpriv]
 
-The "least privilege principle" is a reknown paradigm in security, not only in computer science: Even if you have the
+The "least privilege principle" is a renown paradigm in security, not only in computer science: Even if you have the
 highest level of trust in a person, if you give him or her more privileges than he/she needs, you are putting yourself
 at higher risks than if you did not. Indeed, even if you are giving the key of your house, to feed the pets while you
 are in vacation, to your life-long best friend, the probability that something unwanted happens in your house is not
@@ -846,7 +846,7 @@ Even if your pets are in the garage, if you do not have a separate entrance and 
 will still need to go through the house in order to get there, thus making it impossible to give him or her only the
 least possible privileges.
 
-The basic idea here is to try to break the program down into the smallest viable independant parts. Once this is done,
+The basic idea here is to try to break the program down into the smallest viable independent parts. Once this is done,
 it is easier to only give permission to access the parts that should be accessed and not to the parts that are not
 supposed to be accessed.
 
@@ -864,12 +864,12 @@ different entities:
 
 Those two parts (except some parts of the transaction validation) are basically handled, or accessible and directly
 manipulated, by the judging party. But the fact that Python allows all sorts of manipulation to objects you have
-reference to would have made it quite hard anyway to have those two entities communicate with each other synchroneously
+reference to would have made it quite hard anyway to have those two entities communicate with each other synchronously
 without providing, to an attacker that would have got access to one of them, access to the other one.
 
 ### Keep It Simple, Stupid! (KISS) [kiss]
 
-The KISS principle is reknown outside of security too. The KISS principle is more or less composed in some parts, of
+The KISS principle is renown outside of security too. The KISS principle is more or less composed in some parts, of
 tautology: if you increase the complexity of your program, you increase the risk of bugs. This is pretty obvious, as one
 could argue that bugs have a probability to appear for every line of code.
 
@@ -902,7 +902,7 @@ bit more complex but a little bit more realistic in some way:
 debts remaining open or so that we minimize the dissatisfaction of the loaners.
 - Allowing _cancellation transactions_ (together with a _refund_) for _delayed_ transactions. E.g.: a player finally does 
 not want to give that many votes to another player, so she asks for cancellation and proposes a given amount as a refund for 
-the cancelling of the "contract". As any other transaction, both players would need to agree. The judging party would then 
+the canceling of the "contract". As any other transaction, both players would need to agree. The judging party would then 
 simply _discard_ the remaining open delayed transaction upon applying the _cancellation transaction_.
 - Give players an interface to declare the tradable resources they have to the judging party. It would allow to model real life 
 trade where businesses might have exclusive resources that they are alone to possess, compared to everyone trading the same resources.
