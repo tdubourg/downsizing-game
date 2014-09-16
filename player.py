@@ -48,7 +48,6 @@ class DummyPlayer(AbstractPlayer):
         )
         self.interface['make_transaction'](
             type="UnidirectionalTransaction",
-            passwd=self.passwd,
             args=tr,
             calling_player=self,
         )
@@ -104,7 +103,6 @@ class CheaterPlayer(AbstractPlayer):
         tr = self.random_scheduled_transaction(round_number)
         while not self.interface['make_transaction'](
             type="ScheduledBidirectionalTransaction",
-            passwd=self.passwd,
             args=tr,
             calling_player=self,
         ):

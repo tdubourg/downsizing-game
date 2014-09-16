@@ -140,6 +140,19 @@ class Judge(object):
 
 
     def make_transaction(self, **kwargs):
+        """
+
+            Submits a transaction to the judging party. The judging party will go through standard checks to see if the
+            calling player has the right to submit a transaction, then it will try to validate the transaction and
+            potentially refuse it. For a complete description of what happens when a transaction is submitted to the
+            judging party, please refer to the paper, located in the `paper/` directory.
+
+            :param{AbstractPlayer} calling_player: The player that is calling the method (typically, `self`)
+            :param{string} type: The type of transaction to be performed
+            :param{dict} args: Arguments to be passed to the transaction
+
+        """
+
         d("make_transaction()")
         d("Banned players", self.banned_players)
         if self.current_pid in self.banned_players:
