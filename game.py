@@ -29,25 +29,26 @@ class Game(object):
         # Note: passing a copy of the dictionaries, as we do not want players to share anything...
         from uuid import uuid4 as uuid
         self.passwords = {i: uuid() for i in self.players_ids}
+        d("Players passwords are:", self.passwords)
+        d("Platers starting resources are:", starting_resources)
         self.players_at_game_start = [self.player_instance(
             i,
             self.players_ids,
             dict(starting_resources),
-            self.passwords[i],
             dict(self.j.interface)
         ) for i in self.players_ids]
         l("Initialized players:", self.players_at_game_start)
         self.players_resources = [dict(starting_resources) for _ in self.players_ids]
         self.j.players = list(self.players_at_game_start)
         self.j.players_ids = list(self.players_ids)
-        self.j.passwords = list(self.passwords)
+        self.j.passwords = self.passwords
 
     def player_instance(self, player_id, player_ids, starting_resources, judge_interface):
         # This is a local variable but for the sake of instantiating something that looks like a class instantiation
         # I am using class casing here
         PlayerClass = DummyPlayer if player_id % 2 else CheaterPlayer
         l("Instantiating player of type", PlayerClass)
-        return PlayerClass(player_id, player_ids, starting_resources, judge_interface)
+        return PlayerClass(player_id, player_ids, starting_resources, self.passwords[player_id], judge_interface)
 
     def start(self):
         # Play until the judging stops the game or until the game time is over

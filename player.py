@@ -15,6 +15,7 @@ class AbstractPlayer(object):
         self.players_ids = players_ids
         self.resources = starting_resources
         self.passwd = password
+        d("Instantiating player", self.player_id, "with password", self.passwd)
 
     def play_round(self):
         i("AbstractPlayer", self.player_id, "plays round")
@@ -68,8 +69,9 @@ class CheaterPlayer(AbstractPlayer):
     
     def random_scheduled_transaction(self, current_round):
         # To appeal other players, we offer them X > Y cash in exchange of Y cash (in other words: free cash!)
-        amount1 = self.rr(0, 1000000)
-        amount2 = self.rr(amount1, 1000000)
+        # but there is a delay for us to transfer the money and we are not planning on really transferring it...
+        amount1 = self.rr(0, 100)
+        amount2 = self.rr(amount1, 100)
         return (
             self.c(self.other_player_ids),  # Just transfer money to the player that is player just before us
             self.player_id,
@@ -82,6 +84,7 @@ class CheaterPlayer(AbstractPlayer):
         )
 
     def play_round(self, round_number):
+        d("Cheater player", self.player_id, "is playing, yay!")
         # Try to make schedule transaction with anyone that accepts it, to sell whatever they accepts
         # and try to set a impossible deadline (> the end of the game)
         # or just never pay them back
@@ -111,7 +114,7 @@ class CheaterPlayer(AbstractPlayer):
 
     def agree_with_transaction(self, tr_data_dict):
         d("Cheater player asked about", tr_data_dict)
-        if tr_data_dict['player_2'] is self.player_id:
+        if tr_data_dict['player_2'] == self.player_id:
             if '_deadline' in tr_data_dict['transaction_2to1']:
                 d('Cheater player', self.player_id, "is accepting the transaction")
             else:
@@ -119,5 +122,5 @@ class CheaterPlayer(AbstractPlayer):
                 return False
             return self.passwd
         else:
-            d('Cheater player', self.player_id, "is refusing the transaction because player_2=", tr_data_dict['player_2'])
+            d('Cheater player', self.player_id, "is refusing the transaction the receiving player is not myself:", tr_data_dict['player_2'], "myself=", self.player_id)
             return False

@@ -30,17 +30,12 @@ class AbstractTransaction(object):
             and application
         This is a non-abstract method
         """
-        cl = self.__class__.clone(self)
-        valid = cl._is_valid(judge)
-        if valid:
-            return (True, cl)
-        else:
-            return (False, None)
+        return self._is_valid(judge)
 
     def apply(self, judge):
         """
         Apply the transaction to the players' resources
-        Abstract method. Has to be overriden by children
+        Abstract method. Has to be overridden by children
         """
         raise NotImplementedError()
 
@@ -57,7 +52,7 @@ class AbstractTransaction(object):
         Internal use only. Validates in-place the current transaction
         This is not a private method, but a protected abstract one.
         It has to be implemented by children, but will be called
-        by parent's is_valid() method unless is_valid() is overriden
+        by parent's is_valid() method unless is_valid() is overridden
         """
         raise NotImplementedError()
 
@@ -65,7 +60,6 @@ class AbstractTransaction(object):
         return "Transaction, id=" + str(self._id)
 
     def get_data(self):
-        d("WTF????")
         return self.__dict__
 
 class UnidirectionalTransaction(AbstractTransaction):
@@ -94,12 +88,16 @@ class UnidirectionalTransaction(AbstractTransaction):
     
     def _is_valid(self, judge):
         if self.resource_type not in Resources:
+            d("Invalid resource type")
             return False
         if self.amount < 0:
+            d("Invalid amount")
             return False
         if not judge.is_valid_player(self.player_from) or not judge.is_valid_player(self.player_to):
+            d("Invalid player_from or player_to")
             return False
         if not judge.has_enough_resource(self.player_from, self.resource_type, self.amount):
+            d("player_from does not have enough resources to pay.")
             return False
         return True
 
@@ -175,7 +173,6 @@ class BidirectionalTransaction(AbstractTransaction):
             + "\n\t\ttransaction_2to1=" + str(self.transaction_2to1)
 
     def get_data(self):
-        d("WAAT")
         data = dict(self.__dict__)
         data['transaction_1to2'] = self.transaction_1to2.get_data()
         data['transaction_2to1'] = self.transaction_2to1.get_data()
@@ -195,7 +192,7 @@ class ScheduledUnidirectionalTransaction(UnidirectionalTransaction):
             return False
         # If nothing went wrong, execute additional checks
         # We are going to check that the player can indeed play before the round it specifiedclass ScheduledUnidirectionalTransaction(UnidirectionalTransaction):
-        judge.is_valid_delay()
+        return judge.is_valid_delay()
 
     def clone(self):
         return ScheduledUnidirectionalTransaction(
@@ -235,6 +232,7 @@ class ScheduledBidirectionalTransaction(BidirectionalTransaction):
         # First, execute parent's checks
         if not super(ScheduledBidirectionalTransaction, self).is_valid(judge):
             return False
+        return True
 
     def clone(self):
         return ScheduledBidirectionalTransaction(
