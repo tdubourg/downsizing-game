@@ -215,13 +215,12 @@ class Judge(object):
     
     def _check_player_agreements(self, tr):
         # Make a copy of the data of the transaction...
-        d("WTF")
         data = dict(tr.get_data())
-        d("WTF")
+        data2 = dict(tr.get_data())
         try:
             return bool(
                   self.players[tr.player_1].agree_with_transaction(data) == self.passwords[tr.player_1]
-                and self.players[tr.player_2].agree_with_transaction(data) == self.passwords[tr.player_2]
+                and self.players[tr.player_2].agree_with_transaction(data2) == self.passwords[tr.player_2]
             )
         except Exception as e:
             d(e)
