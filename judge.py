@@ -80,6 +80,8 @@ class Judge(object):
         self.current_player_transaction_attempts = 0 
         self.current_player_transactions = 0 
         self.banned_players = []
+        self.players_ids = None
+        self.passwords = None
 
     def play_round(self):
         d("Players ids:", self.players_ids)
@@ -109,7 +111,7 @@ class Judge(object):
                     l("Player", self.current_pid, "timed out! After", time() - t)
                     l("#"*100)
                     self.bann_player(pid)
-            except PlayerBannedException as err:
+            except PlayerBannedException:
                 # This is a quick and dirty fix, @TODO
                 self.bann_player(pid)
             except SystemExit as ex:
@@ -193,8 +195,8 @@ class Judge(object):
         d("WTF")
         try:
             return bool(
-                  self.players[tr.player_1].agree_with_transaction(data)
-                & self.players[tr.player_2].agree_with_transaction(data)
+                  self.players[tr.player_1].agree_with_transaction(data) == self.passwords[tr.player_1]
+                and self.players[tr.player_2].agree_with_transaction(data) == self.passwords[tr.player_2]
             )
         except Exception as e:
             d(e)

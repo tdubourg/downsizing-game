@@ -2,7 +2,7 @@ from transactions import Resources
 from utils import i, e, d, l
 
 class AbstractPlayer(object):
-    def __init__(self, player_id, players_ids, starting_resources, interface):
+    def __init__(self, player_id, players_ids, starting_resources, password, interface):
         """
         :param player_id: int The id of the currently being created player
         :param players_ids: [int] The ids of the players in the order players are going to play
@@ -14,6 +14,7 @@ class AbstractPlayer(object):
         self.interface = interface
         self.players_ids = players_ids
         self.resources = starting_resources
+        self.passwd = password
 
     def play_round(self):
         i("AbstractPlayer", self.player_id, "plays round")
@@ -27,6 +28,11 @@ class AbstractPlayer(object):
         return s
 
     def agree_with_transaction(self, tr_data_dict):
+        """
+        :param{dict} tr_data_dict: Data dictionary about the transaction we want to know if the player agrees with
+        :return{mixed} agreement: If, and only if `agreement` is equal to player's password, the player is considered 
+            agreeing
+        """
         raise NotImplementedError()
 
 class DummyPlayer(AbstractPlayer):
@@ -40,11 +46,15 @@ class DummyPlayer(AbstractPlayer):
             Resources.CASH,
             self.resources[Resources.CASH]/2
         )
-        self.interface['make_transaction'](type="UnidirectionalTransaction", args=tr)
+        self.interface['make_transaction'](
+            type="UnidirectionalTransaction",
+            passwd=self.passwd,
+            args=tr,
+        )
 
     def agree_with_transaction(self, tr_data_dict):
         d('DummyPlayer', self.player_id, "accepts transaction", tr_data_dict['_id'])
-        return True
+        return self.passwd
 
 class CheaterPlayer(AbstractPlayer):
     """I am going to attempt to cheat"""
@@ -91,7 +101,11 @@ class CheaterPlayer(AbstractPlayer):
 
     def try_forever(self, round_number):
         tr = self.random_scheduled_transaction(round_number)
-        while not self.interface['make_transaction'](type="ScheduledBidirectionalTransaction", args=tr):
+        while not self.interface['make_transaction'](
+            type="ScheduledBidirectionalTransaction",
+            passwd=self.passwd,
+            args=tr,
+        ):
             tr = self.random_scheduled_transaction(round_number)
 
 
@@ -103,7 +117,7 @@ class CheaterPlayer(AbstractPlayer):
             else:
                 d('Cheater player', self.player_id, "is refusing the transaction because delay_2to1 no in tr_data_dict",)
                 return False
-            return True
+            return self.passwd
         else:
             d('Cheater player', self.player_id, "is refusing the transaction because player_2=", tr_data_dict['player_2'])
             return False

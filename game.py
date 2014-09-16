@@ -27,11 +27,20 @@ class Game(object):
         for r in Resources:
             starting_resources[r] = 100  # TODO: This is temporary, add some config / constants and implement properly later
         # Note: passing a copy of the dictionaries, as we do not want players to share anything...
-        self.players_at_game_start = [self.player_instance(i, self.players_ids, dict(starting_resources), dict(self.j.interface)) for i in self.players_ids]
+        from uuid import uuid4 as uuid
+        self.passwords = {i: uuid() for i in self.players_ids}
+        self.players_at_game_start = [self.player_instance(
+            i,
+            self.players_ids,
+            dict(starting_resources),
+            self.passwords[i],
+            dict(self.j.interface)
+        ) for i in self.players_ids]
         l("Initialized players:", self.players_at_game_start)
         self.players_resources = [dict(starting_resources) for _ in self.players_ids]
         self.j.players = list(self.players_at_game_start)
         self.j.players_ids = list(self.players_ids)
+        self.j.passwords = list(self.passwords)
 
     def player_instance(self, player_id, player_ids, starting_resources, judge_interface):
         # This is a local variable but for the sake of instantiating something that looks like a class instantiation
@@ -41,7 +50,7 @@ class Game(object):
         return PlayerClass(player_id, player_ids, starting_resources, judge_interface)
 
     def start(self):
-        # Play until the juding stops the game or until the game time is over
+        # Play until the judging stops the game or until the game time is over
         while self.j.play_round():
             pass
 
