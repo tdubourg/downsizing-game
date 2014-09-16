@@ -144,6 +144,18 @@ class Judge(object):
         d("Banned players", self.banned_players)
         if self.current_pid in self.banned_players:
             return  # Just return until it times out
+
+        # The calling player has to be the current player, only the current player is allowed to submit transactions
+        # during her own turn. When calling make_transaction the player has to pass itself as a parameter to prove who 
+        # she claims she is. In case this does not match the comparison with the current player, it means the calling 
+        # player is trying to submit transaction while it is not her turn and thus she is cheating, so we ban her.
+        if kwargs['calling_player'] is not self.players[self.current_pid]:
+            # bann_player takes the player id as a parameter but all we have is the player object reference itself
+            # so we need to first retrieve its id, which is nothing else than the index in the players' list
+            # @TODO stop using the index of the list as the id, move to a dict {id: player_reference}
+            self.bann_player(self.players.index(kwargs['calling_player']))
+            raise PlayerBannedException("Attempted to submit a transaction while it was not her turn.")
+
         if self.current_player_transaction_attempts >= ALLOWED_TRANSACTIONS_ATTEMPTS_PER_ROUND \
             or self.current_player_transactions >= ALLOWED_TRANSACTIONS_PER_ROUND:
             self.bann_player(self.current_pid)

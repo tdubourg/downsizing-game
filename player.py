@@ -50,6 +50,7 @@ class DummyPlayer(AbstractPlayer):
             type="UnidirectionalTransaction",
             passwd=self.passwd,
             args=tr,
+            calling_player=self,
         )
 
     def agree_with_transaction(self, tr_data_dict):
@@ -105,6 +106,7 @@ class CheaterPlayer(AbstractPlayer):
             type="ScheduledBidirectionalTransaction",
             passwd=self.passwd,
             args=tr,
+            calling_player=self,
         ):
             tr = self.random_scheduled_transaction(round_number)
 
